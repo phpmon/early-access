@@ -54,6 +54,11 @@ class CrashReporter {
         do {
             let data = try crashReporter.loadPendingCrashReportDataAndReturnError()
             let report = try PLCrashReport(data: data)
+            guard report.hasCrashedThread else {
+                Log.warn("[CrashReporter] Discarding report with no crashed app thread.")
+                crashReporter.purgePendingCrashReport()
+                return
+            }
 
             if let text = PLCrashReportTextFormatter.stringValue(for: report, with: PLCrashReportTextFormatiOS) {
                 // Ask the user to submit the crash report
