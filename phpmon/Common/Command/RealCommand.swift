@@ -23,23 +23,30 @@ public nonisolated final class RealCommand: CommandProtocol, Sendable {
         let task = Process()
         var output = ""
 
-        task.launchPath = path
+        task.executableURL = URL(fileURLWithPath: path)
         task.arguments = arguments
 
         let pipe = Pipe()
         task.standardOutput = pipe
+        defer {
+            try? pipe.fileHandleForReading.close()
+            try? pipe.fileHandleForWriting.close()
+        }
 
         if withStandardError {
             task.standardError = pipe
         }
 
-        task.launch()
+        // A binary can disappear after detection, for example during a Homebrew upgrade.
+        // launch() raises an Objective-C exception that Swift cannot catch.
+        do {
+            try task.run()
+        } catch {
+            Log.err("Could not launch command `\(path) w/ args: \(arguments)`: \(error)")
+            return "PHPMON_COMMAND_LAUNCH_FAILURE"
+        }
         let data = try? pipe.fileHandleForReading.readToEnd()
         task.waitUntilExit()
-
-        defer {
-            try? pipe.fileHandleForReading.close()
-        }
 
         // Handle termination
         if task.terminationReason == .uncaughtSignal {

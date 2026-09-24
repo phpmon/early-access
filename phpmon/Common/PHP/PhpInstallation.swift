@@ -144,10 +144,11 @@ class PhpInstallation {
             return
         }
 
-        // The PHP executable did not return any output
+        // The PHP executable could not be launched or its output could not be read.
         if testCommand.isEmpty
-            || testCommand.contains("HANDLE_READ_FAILURE") {
-            Log.err("No output. PHP \(self.versionNumber.short) is not healthy!")
+            || testCommand.contains("HANDLE_READ_FAILURE")
+            || testCommand == "PHPMON_COMMAND_LAUNCH_FAILURE" {
+            Log.err("Could not probe PHP \(self.versionNumber.short). The installation is not healthy!")
             self.isHealthy = false
         }
 

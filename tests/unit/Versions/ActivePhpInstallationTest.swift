@@ -11,7 +11,10 @@ import Foundation
 @Suite("Active PHP Installation Detection")
 struct ActivePhpInstallationTest {
 
-    @Test(arguments: ["not a version", "PHPMON_COMMAND_UNCAUGHT_SIGNAL", "PHPMON_FILE_HANDLE_READ_FAILURE"])
+    @Test(arguments: [
+        "not a version", "PHPMON_COMMAND_UNCAUGHT_SIGNAL", "PHPMON_FILE_HANDLE_READ_FAILURE",
+        "PHPMON_COMMAND_LAUNCH_FAILURE"
+    ])
     func unparseable_version_output_marks_the_installation_broken(_ output: String) async throws {
         let container = Container.fake(
             shell: [

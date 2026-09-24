@@ -11,9 +11,31 @@ import Foundation
 import Combine
 
 struct PhpVersionDetectionTest {
+    @Test func failed_php_launch_marks_the_installation_unhealthy() async {
+        let container = Container.fake(
+            shell: [
+                "/opt/homebrew/opt/php@8.4/bin/php --ini | grep -E -o '(/[^ ]+\\.ini)'": .instant("")
+            ],
+            files: [
+                "/opt/homebrew/opt/php@8.4/bin/php": .fake(.binary),
+                "/opt/homebrew/opt/php@8.4/bin/php-config": .fake(.binary)
+            ],
+            commands: [
+                "/opt/homebrew/opt/php@8.4/bin/php-config --version": "8.4.2",
+                "/opt/homebrew/opt/php@8.4/bin/php -v": "PHPMON_COMMAND_LAUNCH_FAILURE"
+            ]
+        )
+
+        let installation = await PhpInstallation.detect(container, "8.4")
+
+        #expect(installation.versionNumber.long == "8.4.2")
+        #expect(!installation.isHealthy)
+        #expect(!installation.isMissingBinary)
+    }
+
     @Test(arguments: [
         "not a version", "", "PHPMON_COMMAND_UNCAUGHT_SIGNAL", "PHPMON_FILE_HANDLE_READ_FAILURE",
-        "999999999999999999999999.4.2"
+        "PHPMON_COMMAND_LAUNCH_FAILURE", "999999999999999999999999.4.2"
     ])
     func malformed_installed_version_remains_available_for_repair(_ output: String) async throws {
         let container = Container.fake(
