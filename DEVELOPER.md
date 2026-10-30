@@ -95,6 +95,8 @@ xcodebuild test \
     -destination "platform=macOS"
 ```
 
+The fish integration tests run real fish processes with isolated configuration. Install fish and set `TEST_RUNNER_PHPMON_TEST_FISH` to its absolute executable path when running `xcodebuild test`. Xcode forwards this value to the test process as `PHPMON_TEST_FISH`. Without this variable, the fish integration suite is skipped. CI installs fish and enables the suite.
+
 ### UI tests
 
 ```sh

@@ -25,12 +25,13 @@ jobs:
       - name: Show Xcode version
         run: xcodebuild -version
 
-      - name: Install SwiftLint
-        run: brew install swiftlint
+      - name: Install SwiftLint and fish
+        run: brew install swiftlint fish
 
       - name: Run unit tests
         run: |
           set -o pipefail
+          export TEST_RUNNER_PHPMON_TEST_FISH="$(command -v fish)"
           xcodebuild test \
             -project "PHP Monitor.xcodeproj" \
             -scheme "Unit Tests" \
