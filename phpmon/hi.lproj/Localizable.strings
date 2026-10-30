@@ -720,6 +720,7 @@
 "onboarding_wizard.detail.ready.description" = "अच्छी खबर! आपका सिस्टम अब सही तरीके से कॉन्फ़िगर हो गया है। जारी रखें पर क्लिक करें और PHP Monitor अपनी स्टार्टअप जांचें फिर से चलाएगा। अगर सब ठीक दिखता है, तो आइकन मेनू बार में दिखाई देगा।";
 "onboarding_wizard.command.homebrew.title" = "इसे TERMINAL में चलाएं";
 "onboarding_wizard.command.path.title" = "इसे .zshrc में जोड़ें";
+"onboarding_wizard.command.path.title.fish" = "इसे config.fish में जोड़ें";
 "onboarding_wizard.output.developer_tools_requested" = "डेवलपर टूल्स इंस्टॉलर का अनुरोध किया गया। macOS में वह इंस्टॉलेशन पूरा करें, फिर जारी रखें पर क्लिक करें।";
 "onboarding_wizard.output.homebrew_command_copied" = "Homebrew इंस्टॉलेशन कमांड कॉपी कर लिया गया। इसे Terminal में चलाएं, इंस्टॉलेशन पूरा करें, फिर फिर से जांचें पर क्लिक करें।";
 "onboarding_wizard.output.step_not_resolved" = "यह चरण अभी तक पूरा नहीं हुआ है। कृपया इसे पूरा करें और फिर से प्रयास करें।";

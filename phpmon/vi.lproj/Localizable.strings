@@ -720,6 +720,7 @@
 "onboarding_wizard.detail.ready.description" = "Tin tốt! Hệ thống của bạn hiện đã được cấu hình đúng cách. Nhấp vào Tiếp tục và PHP Monitor sẽ chạy lại các bước kiểm tra khởi động. Nếu mọi thứ đều ổn, biểu tượng sẽ xuất hiện trên thanh menu.";
 "onboarding_wizard.command.homebrew.title" = "CHẠY LỆNH NÀY TRONG TERMINAL";
 "onboarding_wizard.command.path.title" = "THÊM NỘI DUNG NÀY VÀO .zshrc";
+"onboarding_wizard.command.path.title.fish" = "THÊM NỘI DUNG NÀY VÀO config.fish";
 "onboarding_wizard.output.developer_tools_requested" = "Trình cài đặt công cụ phát triển đã được yêu cầu. Hãy hoàn tất việc cài đặt đó trong macOS, sau đó nhấp vào Tiếp tục.";
 "onboarding_wizard.output.homebrew_command_copied" = "Lệnh cài đặt Homebrew đã được sao chép. Hãy chạy nó trong Terminal, hoàn tất việc cài đặt, rồi nhấp vào Kiểm tra lại.";
 "onboarding_wizard.output.step_not_resolved" = "Bước này vẫn chưa được hoàn thành. Vui lòng hoàn tất bước này rồi thử lại.";

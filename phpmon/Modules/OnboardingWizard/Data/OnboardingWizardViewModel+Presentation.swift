@@ -182,9 +182,11 @@ extension OnboardingWizardViewModel {
         case .fixPathAutomatically:
             return .fixPathAutomatically()
         case .recheckPath:
+            let shellEnvironment = ShellEnvironment(container)
             return .recheckPath(
                 configuredShellPath: container.paths.configuredShellPath,
-                instructionLines: ShellEnvironment(container).pathInstructionLines()
+                instructionTitle: shellEnvironment.pathInstructionTitle(),
+                instructionLines: shellEnvironment.pathInstructionLines()
             )
         case .installPhpComposer:
             return .installPhpComposer()

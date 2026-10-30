@@ -720,6 +720,7 @@
 "onboarding_wizard.detail.ready.description" = "Goed nieuws! Uw systeem is nu correct ingesteld. Klik op Doorgaan en PHP Monitor voert de opstartcontroles opnieuw uit. Als alles er goed uitziet, verschijnt het pictogram in de menubalk.";
 "onboarding_wizard.command.homebrew.title" = "VOER DIT UIT IN TERMINAL";
 "onboarding_wizard.command.path.title" = "VOEG DIT TOE AAN .zshrc";
+"onboarding_wizard.command.path.title.fish" = "VOEG DIT TOE AAN config.fish";
 "onboarding_wizard.output.developer_tools_requested" = "Het installatieprogramma voor de ontwikkelhulpmiddelen is aangevraagd. Rond die installatie in macOS af en klik daarna op Doorgaan.";
 "onboarding_wizard.output.homebrew_command_copied" = "De installatieopdracht voor Homebrew is gekopieerd. Voer die uit in Terminal, rond de installatie af en klik daarna op Opnieuw controleren.";
 "onboarding_wizard.output.step_not_resolved" = "Deze stap is nog niet voltooid. Rond hem af en probeer het opnieuw.";

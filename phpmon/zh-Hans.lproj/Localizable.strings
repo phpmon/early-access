@@ -720,6 +720,7 @@
 "onboarding_wizard.detail.ready.description" = "好消息！您的系统现在已经正确配置完成。点击“继续”，PHP Monitor 将重新运行启动检查。如果一切正常，图标会出现在菜单栏中。";
 "onboarding_wizard.command.homebrew.title" = "在 TERMINAL 中运行此命令";
 "onboarding_wizard.command.path.title" = "将此内容添加到 .zshrc";
+"onboarding_wizard.command.path.title.fish" = "将此内容添加到 config.fish";
 "onboarding_wizard.output.developer_tools_requested" = "已请求开发者工具安装程序。请在 macOS 中完成安装，然后点击“继续”。";
 "onboarding_wizard.output.homebrew_command_copied" = "Homebrew 安装命令已复制。请在 Terminal 中运行它，完成安装后点击“再次检查”。";
 "onboarding_wizard.output.step_not_resolved" = "此步骤尚未完成。请先完成后再试一次。";

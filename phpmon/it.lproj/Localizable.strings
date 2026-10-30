@@ -730,6 +730,7 @@ SUGGERIMENTI COMUNI PER LA RISOLUZIONE DEI PROBLEMI
 "onboarding_wizard.detail.ready.description" = "Buone notizie! Il tuo sistema ora è configurato correttamente. Fai clic su Continua e PHP Monitor eseguirà di nuovo i controlli di avvio. Se tutto sembra a posto, l'icona apparirà nella barra dei menu.";
 "onboarding_wizard.command.homebrew.title" = "ESEGUI QUESTO NEL TERMINALE";
 "onboarding_wizard.command.path.title" = "AGGIUNGI QUESTO A .zshrc";
+"onboarding_wizard.command.path.title.fish" = "AGGIUNGI QUESTO A config.fish";
 "onboarding_wizard.output.developer_tools_requested" = "È stato richiesto il programma di installazione degli strumenti di sviluppo. Completa l'installazione in macOS, poi fai clic su Continua.";
 "onboarding_wizard.output.homebrew_command_copied" = "Il comando di installazione di Homebrew è stato copiato. Eseguilo in Terminale, completa l'installazione e poi fai clic su Controlla di nuovo.";
 "onboarding_wizard.output.step_not_resolved" = "Questo passaggio non è stato ancora completato. Completalo e riprova.";

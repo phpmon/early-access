@@ -730,6 +730,7 @@ TIPS PEMECAHAN MASALAH UMUM
 "onboarding_wizard.detail.ready.description" = "Kabar baik! Sistem Anda sekarang sudah dikonfigurasi dengan benar. Klik Lanjutkan dan PHP Monitor akan menjalankan kembali pemeriksaan startup-nya. Jika semuanya terlihat baik, ikon akan muncul di bilah menu.";
 "onboarding_wizard.command.homebrew.title" = "JALANKAN INI DI TERMINAL";
 "onboarding_wizard.command.path.title" = "TAMBAHKAN INI KE .zshrc";
+"onboarding_wizard.command.path.title.fish" = "TAMBAHKAN INI KE config.fish";
 "onboarding_wizard.output.developer_tools_requested" = "Penginstal alat pengembang telah diminta. Selesaikan instalasi itu di macOS, lalu klik Lanjutkan.";
 "onboarding_wizard.output.homebrew_command_copied" = "Perintah instalasi Homebrew telah disalin. Jalankan di Terminal, selesaikan instalasinya, lalu klik Periksa Lagi.";
 "onboarding_wizard.output.step_not_resolved" = "Langkah ini belum selesai. Selesaikan dulu lalu coba lagi.";

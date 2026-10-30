@@ -722,6 +722,7 @@
 "onboarding_wizard.detail.ready.description" = "Gute Nachrichten! Ihr System ist jetzt korrekt eingerichtet. Klicken Sie auf Weiter, und PHP Monitor führt seine Startprüfungen erneut aus. Wenn alles gut aussieht, erscheint das Symbol in der Menüleiste.";
 "onboarding_wizard.command.homebrew.title" = "IM TERMINAL AUSFÜHREN";
 "onboarding_wizard.command.path.title" = "ZU .zshrc HINZUFÜGEN";
+"onboarding_wizard.command.path.title.fish" = "ZU config.fish HINZUFÜGEN";
 "onboarding_wizard.output.developer_tools_requested" = "Das Installationsprogramm für die Entwicklerwerkzeuge wurde angefordert. Schließen Sie die Installation in macOS ab und klicken Sie dann auf Weiter.";
 "onboarding_wizard.output.homebrew_command_copied" = "Der Homebrew-Installationsbefehl wurde kopiert. Führen Sie ihn im Terminal aus, schließen Sie die Installation ab und klicken Sie dann auf Erneut prüfen.";
 "onboarding_wizard.output.step_not_resolved" = "Dieser Schritt wurde noch nicht abgeschlossen. Bitte schließen Sie ihn ab und versuchen Sie es erneut.";

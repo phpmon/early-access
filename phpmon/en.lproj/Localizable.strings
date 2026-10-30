@@ -1102,6 +1102,7 @@ PHP Monitor can update your `~/.zshrc` automatically and add these to your PATH.
 "onboarding_wizard.detail.ready.description" = "Good news! Your system is now properly configured. Click Continue and PHP Monitor will rerun its startup checks. If everything looks good, the icon will appear in the menu bar.";
 "onboarding_wizard.command.homebrew.title" = "RUN THIS IN TERMINAL";
 "onboarding_wizard.command.path.title" = "ADD THIS TO .zshrc";
+"onboarding_wizard.command.path.title.fish" = "ADD THIS TO config.fish";
 "onboarding_wizard.output.developer_tools_requested" = "The developer tools installer was requested. Finish that installation in macOS, then click Continue.";
 "onboarding_wizard.output.homebrew_command_copied" = "The Homebrew install command was copied. Run it in Terminal, complete the installation, then click Check Again.";
 "onboarding_wizard.output.step_not_resolved" = "This step has not been completed yet. Please complete it and try again.";

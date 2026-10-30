@@ -720,6 +720,7 @@
 "onboarding_wizard.detail.ready.description" = "সুসংবাদ! আপনার সিস্টেম এখন সঠিকভাবে কনফিগার হয়েছে। চালিয়ে যান-এ ক্লিক করুন এবং PHP Monitor আবার তার স্টার্টআপ যাচাই চালাবে। সবকিছু ঠিক থাকলে আইকনটি মেনু বারে দেখা যাবে।";
 "onboarding_wizard.command.homebrew.title" = "এটি TERMINAL-এ চালান";
 "onboarding_wizard.command.path.title" = "এটি .zshrc-এ যোগ করুন";
+"onboarding_wizard.command.path.title.fish" = "এটি config.fish-এ যোগ করুন";
 "onboarding_wizard.output.developer_tools_requested" = "ডেভেলপার টুলস ইনস্টলার অনুরোধ করা হয়েছে। macOS-এ সেই ইনস্টলেশন সম্পূর্ণ করুন, তারপর চালিয়ে যান-এ ক্লিক করুন।";
 "onboarding_wizard.output.homebrew_command_copied" = "Homebrew ইনস্টলেশন কমান্ড কপি করা হয়েছে। এটি Terminal-এ চালান, ইনস্টলেশন সম্পূর্ণ করুন, তারপর আবার পরীক্ষা করুন-এ ক্লিক করুন।";
 "onboarding_wizard.output.step_not_resolved" = "এই ধাপটি এখনও সম্পূর্ণ হয়নি। অনুগ্রহ করে এটি সম্পূর্ণ করে আবার চেষ্টা করুন।";

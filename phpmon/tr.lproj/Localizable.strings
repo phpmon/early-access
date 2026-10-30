@@ -720,6 +720,7 @@
 "onboarding_wizard.detail.ready.description" = "Güzel haber! Sisteminiz artık doğru şekilde yapılandırıldı. Devam Et'e tıklayın; PHP Monitor başlangıç kontrollerini yeniden çalıştıracak. Her şey yolundaysa simge menü çubuğunda görünecektir.";
 "onboarding_wizard.command.homebrew.title" = "BUNU TERMINAL'DE ÇALIŞTIRIN";
 "onboarding_wizard.command.path.title" = "BUNU .zshrc'YE EKLEYIN";
+"onboarding_wizard.command.path.title.fish" = "BUNU config.fish'E EKLEYIN";
 "onboarding_wizard.output.developer_tools_requested" = "Geliştirici araçları yükleyicisi istendi. macOS'ta bu kurulumu tamamlayın, ardından Devam Et'e tıklayın.";
 "onboarding_wizard.output.homebrew_command_copied" = "Homebrew yükleme komutu kopyalandı. Bunu Terminal'de çalıştırın, kurulumu tamamlayın ve ardından Yeniden Kontrol Et'e tıklayın.";
 "onboarding_wizard.output.step_not_resolved" = "Bu adım henüz tamamlanmadı. Lütfen tamamlayıp tekrar deneyin.";

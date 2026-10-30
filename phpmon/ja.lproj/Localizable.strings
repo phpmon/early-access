@@ -720,6 +720,7 @@
 "onboarding_wizard.detail.ready.description" = "良い知らせです。システムの設定が正しく完了しました。「続ける」をクリックすると、PHP Monitor が起動チェックを再実行します。すべて問題なければ、メニューバーにアイコンが表示されます。";
 "onboarding_wizard.command.homebrew.title" = "TERMINAL でこれを実行";
 "onboarding_wizard.command.path.title" = ".zshrc にこれを追加";
+"onboarding_wizard.command.path.title.fish" = "config.fish にこれを追加";
 "onboarding_wizard.output.developer_tools_requested" = "開発ツールのインストーラが要求されました。macOS でそのインストールを完了し、「続ける」をクリックしてください。";
 "onboarding_wizard.output.homebrew_command_copied" = "Homebrew のインストールコマンドがコピーされました。Terminal で実行してインストールを完了し、その後「再確認」をクリックしてください。";
 "onboarding_wizard.output.step_not_resolved" = "このステップはまだ完了していません。完了させてからもう一度試してください。";

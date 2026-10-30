@@ -49,4 +49,25 @@ struct OnboardingWizardShellEnvironmentTest {
             ]
         )
     }
+
+    // fish users get `fish_add_path` lines, since the `export` lines mangle the PATH in fish.
+    // fish does not need to be installed: the configured shell decides which lines are shown.
+    @Test func onboarding_path_instructions_use_fish_syntax_for_fish_users() {
+        let shellEnvironment = ShellEnvironment(makeOnboardingContainer(
+            architecture: "arm64",
+            configuredShell: "/opt/homebrew/bin/fish"
+        ))
+
+        #expect(
+            shellEnvironment.pathInstructionLines() == [
+                "fish_add_path ~/.config/phpmon/bin",
+                "fish_add_path ~/.composer/vendor/bin",
+                "fish_add_path /opt/homebrew/bin"
+            ]
+        )
+        #expect(
+            shellEnvironment.pathInstructionTitle()
+                == "onboarding_wizard.command.path.title.fish".localized
+        )
+    }
 }

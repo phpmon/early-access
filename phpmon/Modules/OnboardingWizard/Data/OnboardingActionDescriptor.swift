@@ -96,6 +96,7 @@ extension OnboardingActionDescriptor {
 
     static func recheckPath(
         configuredShellPath: String,
+        instructionTitle: String,
         instructionLines: [String]
     ) -> Self {
         return Self(
@@ -105,7 +106,7 @@ extension OnboardingActionDescriptor {
             ),
             primaryButtonTitle: "onboarding_wizard.buttons.check_again".localized,
             commandBlock: OnboardingViewState.CommandBlock(
-                title: "onboarding_wizard.command.path.title".localized,
+                title: instructionTitle,
                 lines: instructionLines
             ),
             usesStatusBanner: true
