@@ -34,6 +34,18 @@ class CrashReporter {
             return
         }
 
+        // Read the marker before this session can crash and write a new one.
+        let marker = movedBundleMarker
+        let crashedAfterBundleMove = takeMovedBundleMarker(marker)
+
+        // Callbacks must be set before the crash reporter is enabled.
+        var callbacks = PLCrashReporterCallbacks(
+            version: 0,
+            context: movedBundleCheck(bundle: Bundle.main.bundleURL, marker: marker),
+            handleSignal: markCrashAfterBundleMove
+        )
+        crashReporter.setCrash(&callbacks)
+
         do {
             try crashReporter.enableAndReturnError()
         } catch let error {
@@ -42,7 +54,7 @@ class CrashReporter {
 
         if crashReporter.hasPendingCrashReport() {
             Task { @MainActor in
-                CrashReporter.requestSendingCrashReport(crashReporter)
+                CrashReporter.requestSendingCrashReport(crashReporter, crashedAfterBundleMove: crashedAfterBundleMove)
             }
         }
     }
@@ -50,12 +62,17 @@ class CrashReporter {
     /**
      If a pending crash report can be sent, show an alert to the user.
      */
-    @MainActor static func requestSendingCrashReport(_ crashReporter: PLCrashReporter) {
+    @MainActor static func requestSendingCrashReport(_ crashReporter: PLCrashReporter, crashedAfterBundleMove: Bool) {
         do {
             let data = try crashReporter.loadPendingCrashReportDataAndReturnError()
             let report = try PLCrashReport(data: data)
             guard report.hasCrashedThread else {
                 Log.warn("[CrashReporter] Discarding report with no crashed app thread.")
+                crashReporter.purgePendingCrashReport()
+                return
+            }
+            guard !crashedAfterBundleMove else {
+                Log.warn("[CrashReporter] Discarding report of a crash after the app bundle was moved.")
                 crashReporter.purgePendingCrashReport()
                 return
             }
