@@ -50,7 +50,7 @@ struct OnboardingWizardShellEnvironmentTest {
         )
     }
 
-    // fish users get `fish_add_path` lines, since the `export` lines mangle the PATH in fish.
+    // fish users get `set -gx PATH` lines, since the `export` lines mangle the PATH in fish.
     // fish does not need to be installed: the configured shell decides which lines are shown.
     @Test func onboarding_path_instructions_use_fish_syntax_for_fish_users() {
         let shellEnvironment = ShellEnvironment(makeOnboardingContainer(
@@ -60,14 +60,73 @@ struct OnboardingWizardShellEnvironmentTest {
 
         #expect(
             shellEnvironment.pathInstructionLines() == [
-                "fish_add_path ~/.config/phpmon/bin",
-                "fish_add_path ~/.composer/vendor/bin",
-                "fish_add_path /opt/homebrew/bin"
+                "set -gx PATH ~/.config/phpmon/bin $PATH",
+                "set -gx PATH ~/.composer/vendor/bin $PATH",
+                "set -gx PATH /opt/homebrew/bin $PATH"
             ]
         )
         #expect(
             shellEnvironment.pathInstructionTitle()
                 == "onboarding_wizard.command.path.title.fish".localized
         )
+    }
+
+    // On a fresh setup, none of the directories exist yet. Composer's bin directory is only
+    // created by the PHP & Composer step, which comes after the PATH step. So the fish lines must
+    // add each directory to the PATH even when it does not exist, or the PATH step never passes.
+    @Test func fish_path_instructions_configure_path_before_directories_exist() throws {
+        let container = makeOnboardingFakeContainer(
+            architecture: "arm64",
+            configuredShell: "/opt/homebrew/bin/fish",
+            shell: [:],
+            files: [:]
+        )
+        let shell = try #require(container.shell as? TestableShell)
+        let shellEnvironment = ShellEnvironment(container)
+        shell.PATH = "/usr/bin:/bin"
+
+        for line in shellEnvironment.pathInstructionLines() {
+            shell.PATH = applyFishPathLine(line, to: shell.PATH, in: container)
+        }
+
+        let unconfiguredPaths = shellEnvironment.onboardingPathStatus()
+            .filter { !$0.configured }
+            .map(\.path)
+
+        #expect(unconfiguredPaths.isEmpty)
+        #expect(shellEnvironment.hasRequiredOnboardingPaths())
+    }
+
+    /**
+     Applies one fish line to a colon-separated PATH the way fish does, so the test can check the
+     resulting PATH without fish being installed. Directories exist only in the fake filesystem.
+
+     - `set -gx PATH <directories> $PATH` prepends the directories, whether they exist or not.
+     - `fish_add_path <directory>` prepends the directory only if it exists and is not in the PATH.
+
+     Any other line is recorded as an issue, so the test cannot pass on a line it does not model.
+     */
+    private func applyFishPathLine(_ line: String, to path: String, in container: Container) -> String {
+        let words = line.split(separator: " ").map { word in
+            word.hasPrefix("~/")
+                ? container.paths.homePath + word.dropFirst()
+                : String(word)
+        }
+        let entries = path.split(separator: ":").map(String.init)
+
+        if words.count > 4, words.prefix(3) == ["set", "-gx", "PATH"], words.last == "$PATH" {
+            return (words.dropFirst(3).dropLast() + entries).joined(separator: ":")
+        }
+
+        if words.count == 2, words[0] == "fish_add_path" {
+            let directory = words[1]
+            guard container.filesystem.directoryExists(directory), !entries.contains(directory) else {
+                return path
+            }
+            return ([directory] + entries).joined(separator: ":")
+        }
+
+        Issue.record("The test does not model this fish line: \(line)")
+        return path
     }
 }
