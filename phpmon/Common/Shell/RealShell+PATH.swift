@@ -51,11 +51,13 @@ extension RealShell {
         let systemPath = RealShell.systemPathFromPathHelper()
 
         // Construct the command to fetch the PATH. If a shell command is specified, it will also be executed.
+        // `$PATH` is quoted because fish stores PATH as a list: unquoted, it prints the entries
+        // separated by spaces, while quoted, it joins them with colons like zsh and bash do.
         let command: String
         if let executeBeforeShellCommand {
-            command = "\(executeBeforeShellCommand); echo $PATH"
+            command = "\(executeBeforeShellCommand); echo \"$PATH\""
         } else {
-            command = "echo $PATH"
+            command = "echo \"$PATH\""
         }
 
         // Kick off a regular shell. We need this once to determine the PATH.
