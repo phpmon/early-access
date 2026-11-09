@@ -76,14 +76,15 @@ struct BrewPhpFormula: Equatable, Sendable {
     }
 
     // `nonisolated`: pure version comparison read by off-main brew command orchestration.
-    nonisolated var unavailableAfterUpgrade: Bool {
+    nonisolated var seriesToRestoreAfterUpgrade: String? {
         guard name.split(separator: "/").last == "php",
               let installedVersion, case let .upgrade(version) = update,
               let installed = try? VersionNumber.parse(installedVersion),
-              let upgrade = try? VersionNumber.parse(version) else {
-            return false
+              let upgrade = try? VersionNumber.parse(version),
+              upgrade.short != installed.short else {
+            return nil
         }
-        return upgrade.short != installed.short
+        return installed.short
     }
 
     nonisolated var update: BrewPhpUpdate? {

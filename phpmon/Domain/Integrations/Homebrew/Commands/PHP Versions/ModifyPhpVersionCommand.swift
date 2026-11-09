@@ -109,26 +109,14 @@ class ModifyPhpVersionCommand: BrewCommand {
 
     nonisolated private func upgradeMainPhpFormula(
         _ unavailable: BrewPhpFormula,
+        restoring short: String,
         _ onProgress: @escaping @Sendable (BrewCommandProgress) -> Void
     ) async throws {
-        // Determine which version was previously available (that will become unavailable)
-        guard let short = try? VersionNumber
-            .parse(unavailable.installedVersion!).short else {
-            return
-        }
-
         // Restore the previous series before touching other PHP installations.
         // Separate commands make either failure stop the batch immediately.
         do {
             for operation in ["upgrade \(unavailable.name)", "install \(unavailable.name)@\(short)"] {
-                let command = """
-                    export HOMEBREW_DOWNLOAD_CONCURRENCY=auto; \
-                    export HOMEBREW_NO_INSTALL_UPGRADE=true; \
-                    export HOMEBREW_NO_INSTALL_CLEANUP=true; \
-                    export HOMEBREW_NO_ASK=true; \
-                    \(container.paths.brew) \(operation)
-                    """
-                try await run(shell: container.shell, command, onProgress)
+                try await run(shell: container.shell, brewCommand(operation), onProgress)
             }
         } catch {
             // Homebrew may already have replaced `php` even if restoring the old series failed.
@@ -139,24 +127,29 @@ class ModifyPhpVersionCommand: BrewCommand {
     }
 
     nonisolated func upgradePackages(_ onProgress: @escaping @Sendable (BrewCommandProgress) -> Void) async throws {
-        if let unavailable = upgrading.first(where: { !$0.isPinned && $0.unavailableAfterUpgrade }) {
-            try await self.upgradeMainPhpFormula(unavailable, onProgress)
+        for formula in upgrading where !formula.isPinned {
+            guard let series = formula.seriesToRestoreAfterUpgrade else { continue }
+            try await upgradeMainPhpFormula(formula, restoring: series, onProgress)
+            break
         }
         for operation in upgradeOperations {
-            let command = """
-                export HOMEBREW_DOWNLOAD_CONCURRENCY=auto; \
-                export HOMEBREW_NO_INSTALL_UPGRADE=true; \
-                export HOMEBREW_NO_INSTALL_CLEANUP=true; \
-                export HOMEBREW_NO_ASK=true; \
-                \(container.paths.brew) \(operation)
-                """
-            try await run(shell: container.shell, command, onProgress)
+            try await run(shell: container.shell, brewCommand(operation), onProgress)
         }
+    }
+
+    nonisolated private func brewCommand(_ operation: String) -> String {
+        return """
+            export HOMEBREW_DOWNLOAD_CONCURRENCY=auto; \
+            export HOMEBREW_NO_INSTALL_UPGRADE=true; \
+            export HOMEBREW_NO_INSTALL_CLEANUP=true; \
+            export HOMEBREW_NO_ASK=true; \
+            \(container.paths.brew) \(operation)
+            """
     }
 
     /// Keep normal upgrades and snapshot replacements in separate Homebrew operations.
     nonisolated var upgradeOperations: [String] {
-        let packages = upgrading.filter { !$0.isPinned && !$0.unavailableAfterUpgrade }
+        let packages = upgrading.filter { !$0.isPinned && $0.seriesToRestoreAfterUpgrade == nil }
         let upgrades = packages.filter { $0.update?.requiresReinstall == false }.map { $0.name }
         let reinstalls = packages.filter { $0.update?.requiresReinstall == true }.map { $0.name }
         var operations: [String] = []
@@ -175,15 +168,8 @@ class ModifyPhpVersionCommand: BrewCommand {
             return
         }
 
-        let command = """
-            export HOMEBREW_DOWNLOAD_CONCURRENCY=auto; \
-            export HOMEBREW_NO_INSTALL_UPGRADE=true; \
-            export HOMEBREW_NO_INSTALL_CLEANUP=true; \
-            export HOMEBREW_NO_ASK=true; \
-            \(container.paths.brew) install \(self.installing.map { $0.name }.joined(separator: " ")) --force
-            """
-
-        try await run(shell: container.shell, command, onProgress)
+        let operation = "install \(self.installing.map { $0.name }.joined(separator: " ")) --force"
+        try await run(shell: container.shell, brewCommand(operation), onProgress)
     }
 
     nonisolated private func repairBrokenPackages(_ onProgress: @escaping @Sendable (BrewCommandProgress) -> Void) async throws {
