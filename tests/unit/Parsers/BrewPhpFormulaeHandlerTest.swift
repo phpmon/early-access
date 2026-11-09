@@ -58,6 +58,8 @@ struct BrewPhpFormulaeHandlerTest {
 
         #expect(formula.installedVersion == "8.7.0-dev")
         #expect(formula.prerelease == true)
+        #expect(formula.prereleaseType == .nightly)
+        #expect(formula.buildDate == "Nov 9 2026 12:34:56")
         #expect(formula.isPinned == pinned)
         #expect(formula.hasUpgrade == !pinned)
         #expect(formula.update == .reinstallSnapshot(installedCommit: installedCommit, availableCommit: availableCommit))
@@ -97,6 +99,7 @@ struct BrewPhpFormulaeHandlerTest {
         var items = await handler.loadPhpVersions(loadOutdated: true)
         let formula = try #require(items.first { $0.displayName == "PHP 8.7" })
         #expect(formula.installedVersion == version)
+        #expect(formula.prereleaseType == PhpPrerelease.from(version))
         #expect(formula.prerelease == true)
         #expect(formula.update == .reinstallRelease(version: "8.7.0"))
         let command = ModifyPhpVersionCommand(container, title: "Test", upgrading: [formula], installing: [])
@@ -226,7 +229,7 @@ struct BrewPhpFormulaeHandlerTest {
             ],
             commands: [
                 "/opt/homebrew/opt/php@8.7/bin/php-config --version": installedVersion,
-                "/opt/homebrew/opt/php@8.7/bin/php -v": "PHP \(installedVersion)"
+                "/opt/homebrew/opt/php@8.7/bin/php -v": "PHP \(installedVersion) (cli) (built: Nov 9 2026 12:34:56) (NTS)"
             ]
         )
         container.phpEnvs.brewPhpAlias = "8.5"

@@ -111,6 +111,11 @@
 "phpman.buttons.update" = "Güncelle";
 "phpman.buttons.repair" = "Tamir";
 "phpman.version.prerelease" = "Ön sürüm";
+"phpman.version.nightly" = "gecelik derleme";
+"phpman.version.alpha" = "alpha";
+"phpman.version.beta" = "beta";
+"phpman.version.rc" = "RC";
+"phpman.version.built" = "Derleme: %@";
 "phpman.version.nightly_update" = "Güncellenmiş bir nightly derlemesi mevcut.";
 "phpman.version.nightly_commits" = "Yüklü commit: %@
 Mevcut commit: %@";

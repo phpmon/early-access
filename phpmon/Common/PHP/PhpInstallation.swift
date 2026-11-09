@@ -22,6 +22,10 @@ class PhpInstallation {
 
     var installedVersion: String?
 
+    var buildDate: String?
+
+    var prereleaseType: PhpPrerelease? { installedVersion.flatMap(PhpPrerelease.from) }
+
     var isPreRelease: Bool = false
 
     var isMissingBinary: Bool = false
@@ -40,6 +44,16 @@ class PhpInstallation {
         }
 
         return "php@\(self.versionNumber.short)"
+    }
+
+    nonisolated static func buildDate(from output: String?) -> String? {
+        guard let line = output?.split(separator: "\n").first(where: {
+            $0.hasPrefix("PHP ") && $0.dropFirst(4).first?.isNumber == true
+        }),
+              let start = line.range(of: "(built: "),
+              let end = line[start.upperBound...].firstIndex(of: ")") else { return nil }
+        let value = line[start.upperBound..<end].trimmingCharacters(in: .whitespaces)
+        return value.isEmpty ? nil : value
     }
 
     nonisolated static func isPrereleaseVersion(_ version: String) -> Bool {
@@ -119,6 +133,7 @@ class PhpInstallation {
         versionNumber = VersionNumber.make(from: version)!
 
         determineVersion(probe)
+        buildDate = Self.buildDate(from: probe.healthOutput)
         determineHealth(probe)
         determineIniFiles(probe)
 
@@ -179,4 +194,19 @@ class PhpInstallation {
             iniFiles.append(PhpConfigurationFile.from(container, snapshot: snapshot))
         }
     }
+}
+
+nonisolated enum PhpPrerelease: String, Sendable {
+    case nightly, alpha, beta, rc
+
+    static func from(_ version: String) -> Self? {
+        let version = version.lowercased()
+        if version.contains("dev") { return .nightly }
+        if version.contains("alpha") { return .alpha }
+        if version.contains("beta") { return .beta }
+        if version.contains("rc") { return .rc }
+        return nil
+    }
+
+    var label: String { "phpman.version.\(rawValue)".localized }
 }

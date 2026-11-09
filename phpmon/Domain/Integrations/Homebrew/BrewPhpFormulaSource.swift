@@ -12,6 +12,14 @@ nonisolated enum BrewPhpFormulaSource: Equatable, Sendable {
     case snapshot(commit: String)
     case unknown
 
+    var prereleaseType: PhpPrerelease? {
+        switch self {
+        case .snapshot: return .nightly
+        case let .release(version): return PhpPrerelease.from(version)
+        case .unknown: return nil
+        }
+    }
+
     var isPrerelease: Bool? {
         switch self {
         case .snapshot:

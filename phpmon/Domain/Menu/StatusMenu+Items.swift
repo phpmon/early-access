@@ -85,10 +85,16 @@ extension StatusMenu {
             let action = #selector(MainMenu.switchToPhpVersion(sender:))
             let brew = (shortVersion == container.phpEnvs.brewPhpAlias) ? "php" : "php@\(shortVersion)"
 
+            var details = brew
+            if let installation = container.phpEnvs.cachedPhpInstallations[shortVersion], installation.isPreRelease {
+                let label = installation.prereleaseType?.label ?? "phpman.version.prerelease".localized
+                details += ", \(label)"
+            }
+
             let isActive = (shortVersion == container.phpEnvs.phpInstall?.version?.short)
 
             let menuItem = PhpMenuItem(
-                title: "\("mi_php_switch".localized) \(versionString) (\(brew))",
+                title: "\("mi_php_switch".localized) \(versionString) (\(details))",
                 action: isActive ? nil : action, keyEquivalent: "\(shortcutKey)",
                 systemImage: isActive ? "checkmark.square.fill" : "square.dotted"
             )

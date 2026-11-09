@@ -111,6 +111,11 @@
 "phpman.buttons.update" = "Cập nhật";
 "phpman.buttons.repair" = "Sửa chữa";
 "phpman.version.prerelease" = "Pre-release";
+"phpman.version.nightly" = "bản dựng hằng đêm";
+"phpman.version.alpha" = "alpha";
+"phpman.version.beta" = "beta";
+"phpman.version.rc" = "RC";
+"phpman.version.built" = "Ngày dựng: %@";
 "phpman.version.nightly_update" = "Có bản dựng nightly mới.";
 "phpman.version.nightly_commits" = "Commit đã cài đặt: %@
 Commit có sẵn: %@";

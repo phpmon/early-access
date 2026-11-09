@@ -126,7 +126,9 @@ class BrewPhpFormulaeHandler: HandlesBrewPhpFormulae {
                 updateCheck: updateCheck,
                 prerelease: prerelease,
                 isPinned: info?.pinned ?? false,
-                mainPhpUpgradeVersion: mainPhpUpgradeVersion
+                mainPhpUpgradeVersion: mainPhpUpgradeVersion,
+                prereleaseType: installation?.prereleaseType ?? source.prereleaseType,
+                buildDate: installation?.buildDate
             ))
         }
         return items.sorted { $0.displayName > $1.displayName }

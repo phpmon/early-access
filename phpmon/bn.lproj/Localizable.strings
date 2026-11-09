@@ -111,6 +111,11 @@
 "phpman.buttons.update" = "আপডেট";
 "phpman.buttons.repair" = "মেরামত";
 "phpman.version.prerelease" = "প্রি-রিলিজ";
+"phpman.version.nightly" = "নাইটলি";
+"phpman.version.alpha" = "alpha";
+"phpman.version.beta" = "beta";
+"phpman.version.rc" = "RC";
+"phpman.version.built" = "বিল্ড: %@";
 "phpman.version.nightly_update" = "হালনাগাদ nightly বিল্ড উপলব্ধ।";
 "phpman.version.nightly_commits" = "ইনস্টল করা কমিট: %@
 উপলব্ধ কমিট: %@";

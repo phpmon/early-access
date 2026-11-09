@@ -111,6 +111,11 @@
 "phpman.buttons.update" = "Bijwerken";
 "phpman.buttons.repair" = "Herstellen";
 "phpman.version.prerelease" = "Pre-release";
+"phpman.version.nightly" = "nightly";
+"phpman.version.alpha" = "alpha";
+"phpman.version.beta" = "beta";
+"phpman.version.rc" = "RC";
+"phpman.version.built" = "Gebouwd: %@";
 "phpman.version.nightly_update" = "Er is een bijgewerkte nightly-build beschikbaar.";
 "phpman.version.nightly_commits" = "Geïnstalleerde commit: %@
 Beschikbare commit: %@";

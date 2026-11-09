@@ -121,7 +121,7 @@ All stable and supported PHP versions are also supported by PHP Monitor. However
 
 Backports that are installable via PHP Monitor's **PHP Version Manager** functionality are subject to availability via [this tap](https://github.com/shivammathur/homebrew-php).
 
-PHP Version Manager marks development builds and release candidates as pre-release. For nightly updates, it compares the installed source commit with the commit available in the tap. Updating a nightly reinstalls the package. Bottle rebuilds from the same source commit are not detected.
+PHP Version Manager labels nightly, alpha, beta and release candidate builds and shows the installed build date when PHP reports one. The main menu also labels installed pre-release builds. For nightly updates, it compares the installed source commit with the commit available in the tap. Updating a nightly reinstalls the package. Bottle rebuilds from the same source commit are not detected.
 
 Before PHP Version Manager changes an installation, it checks whether Valet supports the requested PHP series. If a newer series is missing, PHP Monitor asks before updating Valet within its current major version, subject to Composer's constraints. If the latest stable Valet still lacks the series, PHP Monitor asks separately before adding temporary support and checks the PHP file for syntax errors. It records its additions across restarts and removes them when the corresponding PHP versions are uninstalled, only if the file and Valet version still match the record. Existing entries and externally changed files are left untouched. Failed checks stop the operation. Adding a series to this list does not guarantee compatibility with a pre-release PHP build.
 

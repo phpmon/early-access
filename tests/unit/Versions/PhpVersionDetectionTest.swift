@@ -11,6 +11,23 @@ import Foundation
 import Combine
 
 struct PhpVersionDetectionTest {
+    @Test(arguments: ["8.7.0-dev", "8.7.0alpha1", "8.7.0beta2", "8.7.0RC3", "8.7.0"])
+    func prerelease_types_are_derived_from_the_installed_version(_ version: String) {
+        let expected: [String: PhpPrerelease] = [
+            "8.7.0-dev": .nightly, "8.7.0alpha1": .alpha, "8.7.0beta2": .beta, "8.7.0RC3": .rc
+        ]
+        #expect(PhpPrerelease.from(version) == expected[version])
+    }
+
+    @Test func build_dates_come_only_from_the_php_version_banner() {
+        #expect(PhpInstallation.buildDate(from: "PHP 8.7.0-dev (cli) (built: Nov 9 2026 12:34:56) (NTS)\nCopyright")
+            == "Nov 9 2026 12:34:56")
+        #expect(PhpInstallation.buildDate(from: "PHP Warning: PHP Startup: extension failed\nPHP 8.7.0-dev (built: Nov 9 2026)") == "Nov 9 2026")
+        for output in [nil, "PHP 8.7.0-dev", "PHP 8.7.0-dev (built: )", "PHP 8.7.0-dev (built: unfinished"] {
+            #expect(PhpInstallation.buildDate(from: output) == nil)
+        }
+    }
+
     @Test func failed_php_launch_marks_the_installation_unhealthy() async {
         let container = Container.fake(
             shell: [

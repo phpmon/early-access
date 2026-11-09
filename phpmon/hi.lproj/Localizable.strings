@@ -111,6 +111,11 @@
 "phpman.buttons.update" = "अपडेट करें";
 "phpman.buttons.repair" = "मरम्मत";
 "phpman.version.prerelease" = "पूर्व-रिलीज़";
+"phpman.version.nightly" = "नाइटली";
+"phpman.version.alpha" = "alpha";
+"phpman.version.beta" = "beta";
+"phpman.version.rc" = "RC";
+"phpman.version.built" = "बिल्ड: %@";
 "phpman.version.nightly_update" = "अपडेट किया गया nightly बिल्ड उपलब्ध है।";
 "phpman.version.nightly_commits" = "इंस्टॉल किया गया कमिट: %@
 उपलब्ध कमिट: %@";

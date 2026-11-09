@@ -111,6 +111,11 @@
 "phpman.buttons.update" = "Atualizar";
 "phpman.buttons.repair" = "Reparar";
 "phpman.version.prerelease" = "Pre-release";
+"phpman.version.nightly" = "compilação noturna";
+"phpman.version.alpha" = "alpha";
+"phpman.version.beta" = "beta";
+"phpman.version.rc" = "RC";
+"phpman.version.built" = "Compilado: %@";
 "phpman.version.nightly_update" = "Está disponível uma compilação nightly atualizada.";
 "phpman.version.nightly_commits" = "Commit instalado: %@
 Commit disponível: %@";

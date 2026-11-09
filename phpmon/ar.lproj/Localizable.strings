@@ -111,6 +111,11 @@
 "phpman.buttons.update" = "تحديث";
 "phpman.buttons.repair" = "إصلاح";
 "phpman.version.prerelease" = "الإصدار التجريبي";
+"phpman.version.nightly" = "بناء ليلي";
+"phpman.version.alpha" = "alpha";
+"phpman.version.beta" = "beta";
+"phpman.version.rc" = "RC";
+"phpman.version.built" = "تاريخ البناء: %@";
 "phpman.version.nightly_update" = "يتوفر إصدار nightly محدّث.";
 "phpman.version.nightly_commits" = "الالتزام المثبّت: %@
 الالتزام المتاح: %@";

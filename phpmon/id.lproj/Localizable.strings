@@ -111,6 +111,11 @@
 "phpman.buttons.update" = "Perbarui";
 "phpman.buttons.repair" = "Perbaiki";
 "phpman.version.prerelease" = "Pra-rilis";
+"phpman.version.nightly" = "nightly";
+"phpman.version.alpha" = "alpha";
+"phpman.version.beta" = "beta";
+"phpman.version.rc" = "RC";
+"phpman.version.built" = "Dibangun: %@";
 "phpman.version.nightly_update" = "Build nightly yang diperbarui tersedia.";
 "phpman.version.nightly_commits" = "Commit terinstal: %@
 Commit tersedia: %@";

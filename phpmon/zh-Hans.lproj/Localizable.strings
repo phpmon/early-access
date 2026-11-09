@@ -111,6 +111,11 @@
 "phpman.buttons.update" = "更新";
 "phpman.buttons.repair" = "修复";
 "phpman.version.prerelease" = "预发布";
+"phpman.version.nightly" = "每夜构建";
+"phpman.version.alpha" = "alpha";
+"phpman.version.beta" = "beta";
+"phpman.version.rc" = "RC";
+"phpman.version.built" = "构建时间：%@";
 "phpman.version.nightly_update" = "有更新的 nightly 构建可用。";
 "phpman.version.nightly_commits" = "已安装的提交：%@
 可用的提交：%@";

@@ -223,8 +223,8 @@ struct PhpVersionManagerView: View {
         .padding(10)
     }
 
-    private var prereleaseBadge: some View {
-        Text("phpman.version.prerelease".localized.uppercased())
+    private func prereleaseBadge(for formula: BrewPhpFormula) -> some View {
+        Text((formula.prereleaseType?.label ?? "phpman.version.prerelease".localized).uppercased())
             .font(.system(size: 9))
             .padding(.horizontal, 5)
             .padding(.vertical, 1)
@@ -280,7 +280,7 @@ struct PhpVersionManagerView: View {
                 Text(formula.displayName).bold()
 
                 if formula.prerelease == true {
-                    prereleaseBadge
+                    prereleaseBadge(for: formula)
                 }
             }
 
@@ -308,6 +308,12 @@ struct PhpVersionManagerView: View {
                     .foregroundColor(.gray)
             }
 
+            if formula.prerelease == true, let date = formula.buildDate {
+                Text("phpman.version.built".localized(date))
+                    .font(.system(size: 11))
+                    .foregroundColor(.gray)
+            }
+
             if formula.prerelease == nil || (formula.isInstalled && formula.updateCheck == .unknown) {
                 Text("phpman.version.unknown".localizedForSwiftUI)
                     .font(.system(size: 11))
@@ -321,17 +327,6 @@ struct PhpVersionManagerView: View {
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-    }
-
-    @ViewBuilder
-    private func updateDescription(_ update: BrewPhpUpdate, installedVersion: String) -> some View {
-        switch update {
-        case let .upgrade(version), let .reinstallRelease(version):
-            Text("phpman.version.has_update".localized(installedVersion, version))
-        case let .reinstallSnapshot(installedCommit, availableCommit):
-            Text("phpman.version.nightly_update".localizedForSwiftUI)
-                .help("phpman.version.nightly_commits".localized(String(installedCommit.prefix(12)), String(availableCommit.prefix(12))))
-        }
     }
 
     private func formulaIcon(for formula: BrewPhpFormula) -> some View {
@@ -360,4 +355,17 @@ struct PhpVersionManagerView: View {
         formulae: Brew.shared.formulae,
         handler: FakeBrewFormulaeHandler(formulae: Brew.shared.formulae)
     ).frame(width: 600, height: 600)
+}
+
+extension PhpVersionManagerView {
+    @ViewBuilder
+    private func updateDescription(_ update: BrewPhpUpdate, installedVersion: String) -> some View {
+        switch update {
+        case let .upgrade(version), let .reinstallRelease(version):
+            Text("phpman.version.has_update".localized(installedVersion, version))
+        case let .reinstallSnapshot(installedCommit, availableCommit):
+            Text("phpman.version.nightly_update".localizedForSwiftUI)
+                .help("phpman.version.nightly_commits".localized(String(installedCommit.prefix(12)), String(availableCommit.prefix(12))))
+        }
+    }
 }

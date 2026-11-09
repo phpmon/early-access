@@ -111,6 +111,11 @@
 "phpman.buttons.update" = "更新";
 "phpman.buttons.repair" = "修復";
 "phpman.version.prerelease" = "プレリリース";
+"phpman.version.nightly" = "ナイトリー";
+"phpman.version.alpha" = "alpha";
+"phpman.version.beta" = "beta";
+"phpman.version.rc" = "RC";
+"phpman.version.built" = "ビルド日時: %@";
 "phpman.version.nightly_update" = "更新された nightly ビルドがあります。";
 "phpman.version.nightly_commits" = "インストール済みのコミット: %@
 利用可能なコミット: %@";

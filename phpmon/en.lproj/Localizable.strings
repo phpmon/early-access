@@ -151,6 +151,11 @@ and restart PHP Monitor for extensions to become visible. If the problem persist
 "phpman.buttons.update" = "Update";
 "phpman.buttons.repair" = "Repair";
 "phpman.version.prerelease" = "Pre-release";
+"phpman.version.nightly" = "nightly";
+"phpman.version.alpha" = "alpha";
+"phpman.version.beta" = "beta";
+"phpman.version.rc" = "RC";
+"phpman.version.built" = "Built: %@";
 "phpman.version.nightly_update" = "Updated nightly build available.";
 "phpman.version.nightly_commits" = "Installed commit: %@\nAvailable commit: %@";
 "phpman.version.pinned" = "This package is pinned in Homebrew.";
