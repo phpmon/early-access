@@ -24,7 +24,7 @@ struct BrewPhpFormulaSourceTest {
         end
         """)
         #expect(source == .snapshot(commit: commit))
-        #expect(source.isPrerelease == true)
+        #expect(source.releaseStatus() == .prerelease(.nightly))
     }
 
     @Test(arguments: ["8.6.0alpha1", "8.6.0beta2", "8.6.0RC5", "8.6.0"])
@@ -33,7 +33,7 @@ struct BrewPhpFormulaSourceTest {
             url: "https://downloads.php.net/~release-manager/php-\(version).tar.xz", version: nil
         )
         #expect(source == .release(version: version))
-        #expect(source.isPrerelease == (version != "8.6.0"))
+        #expect(source.releaseStatus() == PhpReleaseStatus(version: version))
     }
 
     @Test func backports_are_stable_and_unrecognized_metadata_stays_unknown() {
@@ -41,7 +41,7 @@ struct BrewPhpFormulaSourceTest {
             url: "https://github.com/shivammathur/php-src-backports/archive/abcdef.tar.gz", version: "7.4.33"
         )
         #expect(source == .release(version: "7.4.33"))
-        #expect(source.isPrerelease == false)
+        #expect(source.releaseStatus() == .stable)
         for url in [
             "https://github.com/php/php-src/archive/master.tar.gz",
             "https://example.com/php-8.7.0.tar.gz",
@@ -49,7 +49,7 @@ struct BrewPhpFormulaSourceTest {
         ] {
             #expect(BrewPhpFormulaSource.from(url: url, version: "8.7.0") == .unknown)
         }
-        #expect(BrewPhpFormulaSource.from("unreadable formula").isPrerelease == nil)
+        #expect(BrewPhpFormulaSource.from("unreadable formula").releaseStatus() == .unknown)
     }
 
     @Test func nightly_changes_do_not_require_a_new_php_version() {

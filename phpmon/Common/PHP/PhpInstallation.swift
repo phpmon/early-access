@@ -26,7 +26,7 @@ class PhpInstallation {
 
     var prereleaseType: PhpPrerelease? { installedVersion.flatMap(PhpPrerelease.from) }
 
-    var isPreRelease: Bool = false
+    var isPreRelease: Bool { prereleaseType != nil }
 
     var isMissingBinary: Bool = false
 
@@ -57,7 +57,7 @@ class PhpInstallation {
     }
 
     nonisolated static func isPrereleaseVersion(_ version: String) -> Bool {
-        return version.range(of: #"(?i)(alpha|beta|rc|dev)"#, options: .regularExpression) != nil
+        return PhpPrerelease.from(version) != nil
     }
 
     // MARK: - Detection
@@ -153,7 +153,6 @@ class PhpInstallation {
 
             versionNumber = parsedVersion
             installedVersion = longVersionString
-            isPreRelease = Self.isPrereleaseVersion(longVersionString)
         } else {
             // Keep track that the `php-config` binary is missing; this often means there's a mismatch between
             // the `php` version alias and the actual installed version (e.g. you haven't upgraded `php`)
@@ -209,4 +208,18 @@ nonisolated enum PhpPrerelease: String, Sendable {
     }
 
     var label: String { "phpman.version.\(rawValue)".localized }
+}
+
+nonisolated enum PhpReleaseStatus: Equatable, Sendable {
+    case unknown
+    case stable
+    case prerelease(PhpPrerelease?)
+
+    init(version: String) {
+        if let kind = PhpPrerelease.from(version) {
+            self = .prerelease(kind)
+        } else {
+            self = .stable
+        }
+    }
 }

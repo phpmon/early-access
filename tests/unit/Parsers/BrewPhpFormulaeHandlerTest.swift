@@ -57,8 +57,7 @@ struct BrewPhpFormulaeHandlerTest {
         let formula = try #require(items.first { $0.displayName == "PHP 8.7" })
 
         #expect(formula.installedVersion == "8.7.0-dev")
-        #expect(formula.prerelease == true)
-        #expect(formula.prereleaseType == .nightly)
+        #expect(formula.releaseStatus == .prerelease(.nightly))
         #expect(formula.buildDate == "Nov 9 2026 12:34:56")
         #expect(formula.isPinned == pinned)
         #expect(formula.hasUpgrade == !pinned)
@@ -99,8 +98,7 @@ struct BrewPhpFormulaeHandlerTest {
         var items = await handler.loadPhpVersions(loadOutdated: true)
         let formula = try #require(items.first { $0.displayName == "PHP 8.7" })
         #expect(formula.installedVersion == version)
-        #expect(formula.prereleaseType == PhpPrerelease.from(version))
-        #expect(formula.prerelease == true)
+        #expect(formula.releaseStatus == .prerelease(PhpPrerelease.from(version)))
         #expect(formula.update == .reinstallRelease(version: "8.7.0"))
         let command = ModifyPhpVersionCommand(container, title: "Test", upgrading: [formula], installing: [])
         #expect(command.upgradeOperations == ["reinstall shivammathur/php/php@8.7"])
@@ -114,7 +112,7 @@ struct BrewPhpFormulaeHandlerTest {
         items = await handler.loadPhpVersions(loadOutdated: false)
         let stable = try #require(items.first { $0.displayName == "PHP 8.7" })
         #expect(stable.installedVersion == "8.7.0")
-        #expect(stable.prerelease == false)
+        #expect(stable.releaseStatus == .stable)
         #expect(stable.updateCheck == .current)
         #expect(!stable.hasUpgrade)
     }
@@ -141,7 +139,7 @@ struct BrewPhpFormulaeHandlerTest {
         let items = await handler.loadPhpVersions(loadOutdated: false)
         let formula = try #require(items.first { $0.displayName == "PHP 8.7" })
         #expect(!formula.isInstalled)
-        #expect(formula.prerelease == true)
+        #expect(formula.releaseStatus == .prerelease(.nightly))
     }
 
     @Test func stable_refresh_does_not_require_the_saved_formula_or_another_brew_update() async throws {
@@ -151,7 +149,7 @@ struct BrewPhpFormulaeHandlerTest {
         let items = await handler.loadPhpVersions(loadOutdated: false)
         let formula = try #require(items.first { $0.displayName == "PHP 8.7" })
         #expect(formula.updateCheck == .current)
-        #expect(formula.prerelease == false)
+        #expect(formula.releaseStatus == .stable)
         #expect(!handler.formulae.updateCheckFailed)
     }
 

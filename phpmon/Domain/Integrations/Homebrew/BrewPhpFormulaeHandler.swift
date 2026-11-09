@@ -102,9 +102,7 @@ class BrewPhpFormulaeHandler: HandlesBrewPhpFormulae {
                 installedSource = .release(version: version)
             }
             let source = installation == nil ? sources.available : installedSource
-            let prerelease = source.isPrerelease ?? installation?.installedVersion.map {
-                PhpInstallation.isPrereleaseVersion($0)
-            }
+            let releaseStatus = source.releaseStatus(installedVersion: installation?.installedVersion)
             let updateCheck: BrewPhpUpdateCheck
             if let info, installation != nil {
                 updateCheck = BrewPhpUpdateCheck.compare(
@@ -124,10 +122,9 @@ class BrewPhpFormulaeHandler: HandlesBrewPhpFormulae {
                 displayName: "PHP \(version)",
                 installedVersion: installation.map { $0.installedVersion ?? $0.versionNumber.text },
                 updateCheck: updateCheck,
-                prerelease: prerelease,
+                releaseStatus: releaseStatus,
                 isPinned: info?.pinned ?? false,
                 mainPhpUpgradeVersion: mainPhpUpgradeVersion,
-                prereleaseType: installation?.prereleaseType ?? source.prereleaseType,
                 buildDate: installation?.buildDate
             ))
         }

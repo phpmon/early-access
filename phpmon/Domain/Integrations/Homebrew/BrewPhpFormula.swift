@@ -27,9 +27,7 @@ struct BrewPhpFormula: Equatable, Sendable {
 
     let isPinned: Bool
 
-    /// Nil when the release status could not be determined.
-    let prerelease: Bool?
-    let prereleaseType: PhpPrerelease?
+    let releaseStatus: PhpReleaseStatus
     let buildDate: String?
 
     /// The series installed automatically by an available main-formula upgrade.
@@ -49,10 +47,9 @@ struct BrewPhpFormula: Equatable, Sendable {
         displayName: String,
         installedVersion: String?,
         updateCheck: BrewPhpUpdateCheck = .unknown,
-        prerelease: Bool? = nil,
+        releaseStatus: PhpReleaseStatus = .unknown,
         isPinned: Bool = false,
         mainPhpUpgradeVersion: String? = nil,
-        prereleaseType: PhpPrerelease? = nil,
         buildDate: String? = nil
     ) {
         self.container = container
@@ -61,8 +58,7 @@ struct BrewPhpFormula: Equatable, Sendable {
         self.installedVersion = installedVersion
         self.updateCheck = updateCheck
         self.isPinned = isPinned
-        self.prerelease = prerelease
-        self.prereleaseType = prereleaseType ?? installedVersion.flatMap(PhpPrerelease.from)
+        self.releaseStatus = releaseStatus
         self.buildDate = buildDate
         self.mainPhpUpgradeVersion = mainPhpUpgradeVersion
         self.hasFormulaFile = checkFormulaFile()
@@ -161,8 +157,7 @@ struct BrewPhpFormula: Equatable, Sendable {
             && lhs.installedVersion == rhs.installedVersion
             && lhs.updateCheck == rhs.updateCheck
             && lhs.isPinned == rhs.isPinned
-            && lhs.prerelease == rhs.prerelease
-            && lhs.prereleaseType == rhs.prereleaseType
+            && lhs.releaseStatus == rhs.releaseStatus
             && lhs.buildDate == rhs.buildDate
             && lhs.mainPhpUpgradeVersion == rhs.mainPhpUpgradeVersion
             && lhs.hasFormulaFile == rhs.hasFormulaFile

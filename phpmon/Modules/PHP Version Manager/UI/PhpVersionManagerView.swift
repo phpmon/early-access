@@ -223,8 +223,8 @@ struct PhpVersionManagerView: View {
         .padding(10)
     }
 
-    private func prereleaseBadge(for formula: BrewPhpFormula) -> some View {
-        Text((formula.prereleaseType?.label ?? "phpman.version.prerelease".localized).uppercased())
+    private func prereleaseBadge(for kind: PhpPrerelease?) -> some View {
+        Text((kind?.label ?? "phpman.version.prerelease".localized).uppercased())
             .font(.system(size: 9))
             .padding(.horizontal, 5)
             .padding(.vertical, 1)
@@ -279,8 +279,8 @@ struct PhpVersionManagerView: View {
             HStack {
                 Text(formula.displayName).bold()
 
-                if formula.prerelease == true {
-                    prereleaseBadge(for: formula)
+                if case let .prerelease(kind) = formula.releaseStatus {
+                    prereleaseBadge(for: kind)
                 }
             }
 
@@ -308,13 +308,13 @@ struct PhpVersionManagerView: View {
                     .foregroundColor(.gray)
             }
 
-            if formula.prerelease == true, let date = formula.buildDate {
+            if case .prerelease = formula.releaseStatus, let date = formula.buildDate {
                 Text("phpman.version.built".localized(date))
                     .font(.system(size: 11))
                     .foregroundColor(.gray)
             }
 
-            if formula.prerelease == nil || (formula.isInstalled && formula.updateCheck == .unknown) {
+            if formula.releaseStatus == .unknown || (formula.isInstalled && formula.updateCheck == .unknown) {
                 Text("phpman.version.unknown".localizedForSwiftUI)
                     .font(.system(size: 11))
                     .foregroundColor(.gray)

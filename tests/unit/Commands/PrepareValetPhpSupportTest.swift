@@ -45,7 +45,7 @@ struct PrepareValetPhpSupportTest {
     @Test func failed_valet_preparation_stops_the_php_manager_before_homebrew_runs() async throws {
         let container = makeContainer(networkStatus: 503)
         let formula = BrewPhpFormula(
-            container, name: "shivammathur/php/php@8.7", displayName: "PHP 8.7", installedVersion: nil, prerelease: true
+            container, name: "shivammathur/php/php@8.7", displayName: "PHP 8.7", installedVersion: nil, releaseStatus: .prerelease(nil)
         )
         let command = ModifyPhpVersionCommand(container, title: "Test", upgrading: [], installing: [formula])
         do {
@@ -68,7 +68,7 @@ struct PrepareValetPhpSupportTest {
         let container = Container.fake()
         container.valet.version = VersionNumber(major: major, minor: 0, patch: 0)
         let older = BrewPhpFormula(container, name: "php@5.6", displayName: "PHP 5.6", installedVersion: nil)
-        let future = BrewPhpFormula(container, name: "php@8.7", displayName: "PHP 8.7", installedVersion: nil, prerelease: true)
+        let future = BrewPhpFormula(container, name: "php@8.7", displayName: "PHP 8.7", installedVersion: nil, releaseStatus: .prerelease(nil))
         let command = ModifyPhpVersionCommand(container, title: "Test", upgrading: [], installing: [older, future])
         #expect(command.requestedPhpVersions == ["8.7"])
     }

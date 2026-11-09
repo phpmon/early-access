@@ -12,22 +12,19 @@ nonisolated enum BrewPhpFormulaSource: Equatable, Sendable {
     case snapshot(commit: String)
     case unknown
 
-    var prereleaseType: PhpPrerelease? {
-        switch self {
-        case .snapshot: return .nightly
-        case let .release(version): return PhpPrerelease.from(version)
-        case .unknown: return nil
-        }
-    }
-
-    var isPrerelease: Bool? {
+    func releaseStatus(installedVersion: String? = nil) -> PhpReleaseStatus {
+        let installedKind = installedVersion.flatMap(PhpPrerelease.from)
         switch self {
         case .snapshot:
-            return true
+            return .prerelease(installedKind ?? .nightly)
         case let .release(version):
-            return PhpInstallation.isPrereleaseVersion(version)
+            let status = PhpReleaseStatus(version: version)
+            if case .prerelease = status, let installedKind {
+                return .prerelease(installedKind)
+            }
+            return status
         case .unknown:
-            return nil
+            return installedVersion.map { PhpReleaseStatus(version: $0) } ?? .unknown
         }
     }
 

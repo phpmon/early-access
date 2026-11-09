@@ -25,7 +25,7 @@ class FakeBrewFormulaeHandler: HandlesBrewPhpFormulae {
                 displayName: "PHP 9.9",
                 installedVersion: nil,
                 updateCheck: .available(.upgrade(version: "9.9.0")),
-                prerelease: true
+                releaseStatus: .prerelease(nil)
             ),
             BrewPhpFormula(
                 container,
@@ -33,7 +33,7 @@ class FakeBrewFormulaeHandler: HandlesBrewPhpFormulae {
                 displayName: "PHP 8.4",
                 installedVersion: nil,
                 updateCheck: .available(.upgrade(version: "8.4.0")),
-                prerelease: true
+                releaseStatus: .prerelease(nil)
             ),
             BrewPhpFormula(
                 container,
@@ -41,7 +41,7 @@ class FakeBrewFormulaeHandler: HandlesBrewPhpFormulae {
                 displayName: "PHP 8.3",
                 installedVersion: nil,
                 updateCheck: .available(.upgrade(version: "8.3.0")),
-                prerelease: true
+                releaseStatus: .prerelease(nil)
             ),
             BrewPhpFormula(
                 container,
