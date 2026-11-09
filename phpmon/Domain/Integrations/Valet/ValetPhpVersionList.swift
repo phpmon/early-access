@@ -50,6 +50,10 @@ nonisolated struct ValetPhpVersionList {
         self.bodyRange = bodyRange
     }
 
+    func canSupport(_ version: String, temporaryVersions: Set<String> = []) -> Bool {
+        return (try? missingVersions(from: [version], temporaryVersions: temporaryVersions)) != nil
+    }
+
     func missingVersions(from requested: Set<String>, temporaryVersions: Set<String> = []) throws -> Set<String> {
         let missing = requested.subtracting(versions)
         // Our temporary entries do not raise Valet's official PHP support boundary.

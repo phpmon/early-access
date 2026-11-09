@@ -56,8 +56,8 @@ class PrepareValetPhpSupportCommand: BrewCommand {
         }
         // A cancelled edit after Composer updates Valet must not forget installed temporary support.
         // Ignore historical series that this Valet release no longer permits us to add.
-        let temporaryVersions = candidates.filter {
-            (try? list.missingVersions(from: [$0], temporaryVersions: owned)) != nil
+        let temporaryVersions = candidates.filter { version in
+            list.canSupport(version, temporaryVersions: owned)
         }
         let installedTemporaryVersions = await runBlocking {
             temporaryVersions.filter {

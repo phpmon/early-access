@@ -113,6 +113,17 @@ struct PrepareValetPhpSupportTest {
         }
     }
 
+    @Test func support_eligibility_keeps_existing_entries_and_uses_the_official_boundary() throws {
+        let list = try ValetPhpVersionList(source(versions: ["8.7", "8.5", "8.4"]))
+        #expect(list.canSupport("8.4", temporaryVersions: ["8.7"]))
+        #expect(list.canSupport("8.7", temporaryVersions: ["8.7"]))
+        #expect(list.canSupport("8.6", temporaryVersions: ["8.7"]))
+        #expect(!list.canSupport("8.6"))
+        #expect(!list.canSupport("7.0", temporaryVersions: ["8.7"]))
+        #expect(!list.canSupport("8.8'; bad() //", temporaryVersions: ["8.7"]))
+        #expect(!list.canSupport("8.8", temporaryVersions: list.versions))
+    }
+
     @Test func parser_rejects_expressions_duplicate_declarations_and_older_unsupported_series() throws {
         for content in [
             source() + source(),
