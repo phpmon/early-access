@@ -44,15 +44,3 @@ struct HomebrewPackage: Decodable {
 struct HomebrewInstalled: Decodable {
     let version: String
 }
-
-struct OutdatedFormulae: Decodable {
-    let formulae: [OutdatedFormula]
-}
-
-struct OutdatedFormula: Decodable {
-    let name: String
-    let installed_versions: [String]
-    let current_version: String
-    let pinned: Bool
-    let pinned_version: String?
-}

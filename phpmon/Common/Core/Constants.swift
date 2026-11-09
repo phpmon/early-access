@@ -79,28 +79,6 @@ nonisolated struct Constants {
     static let PhpFormulaeCutoffDate = "2026-11-30" // YYYY-MM-DD
 
     /**
-     * The PHP versions that are considered pre-release versions.
-     * Past a certain date, an experimental version "graduates"
-     * to a release version and is no longer marked as experimental.
-     */
-    static var ExperimentalPhpVersions: Set<String> {
-        let releaseDates = [
-            "8.6": Date.fromString(PhpFormulaeCutoffDate)
-        ]
-
-        return Set(releaseDates
-            .filter { (_: String, date: Date?) in
-                guard let date else {
-                    return false
-                }
-
-                return date > Date.now
-            }.map { (version: String, _: Date?) in
-                return version
-            })
-    }
-
-    /**
      The major versions of Homebrew that are supported.
      */
     static let SupportedHomebrewVersions: Set = [4, 5, 6, 7]
@@ -114,7 +92,7 @@ nonisolated struct Constants {
         "7.0", "7.1", "7.2", "7.3", "7.4",
         "8.0", "8.1", "8.2", "8.3", "8.4",
         "8.5",
-        "8.6" // DEV
+        "8.6", "8.7"
     ]
 
     /**
@@ -137,7 +115,7 @@ nonisolated struct Constants {
             "7.1", "7.2", "7.3", "7.4",
             "8.0", "8.1", "8.2", "8.3", "8.4",
             "8.5",
-            "8.6" // DEV
+            "8.6", "8.7"
         ]
     ]
 

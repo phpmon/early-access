@@ -22,11 +22,16 @@ struct BrewPhpFormula: Equatable, Sendable {
     /// The version of the formula that is currently installed.
     let installedVersion: String?
 
-    /// The upgrade that is currently available, if it exists.
-    let upgradeVersion: String?
+    /// The result of checking this installation for updates.
+    let updateCheck: BrewPhpUpdateCheck
 
-    /// Whether this formula is a stable version of PHP.
-    let prerelease: Bool
+    let isPinned: Bool
+
+    /// Nil when the release status could not be determined.
+    let prerelease: Bool?
+
+    /// The series installed automatically by an available main-formula upgrade.
+    let mainPhpUpgradeVersion: String?
 
     /// Whether this formula's associated Homebrew file exists.
     var hasFormulaFile: Bool = false
@@ -41,41 +46,49 @@ struct BrewPhpFormula: Equatable, Sendable {
         name: String,
         displayName: String,
         installedVersion: String?,
-        upgradeVersion: String?,
-        prerelease: Bool = false
+        updateCheck: BrewPhpUpdateCheck = .unknown,
+        prerelease: Bool? = nil,
+        isPinned: Bool = false,
+        mainPhpUpgradeVersion: String? = nil
     ) {
         self.container = container
         self.name = name
         self.displayName = displayName
         self.installedVersion = installedVersion
-        self.upgradeVersion = upgradeVersion
+        self.updateCheck = updateCheck
+        self.isPinned = isPinned
         self.prerelease = prerelease
+        self.mainPhpUpgradeVersion = mainPhpUpgradeVersion
         self.hasFormulaFile = checkFormulaFile()
     }
 
     /// Whether the formula can be upgraded.
     var hasUpgrade: Bool {
-        return upgradeVersion != nil
+        return update != nil && !isPinned
     }
 
     /// Whether this formula alias is different.
     var hasUpgradedFormulaAlias: Bool {
-        return self.shortVersion == container.phpEnvs.homebrewBrewPhpAlias
-        && container.phpEnvs.homebrewBrewPhpAlias != container.phpEnvs.brewPhpAlias
+        return mainPhpUpgradeVersion != nil && self.shortVersion == mainPhpUpgradeVersion
+            && mainPhpUpgradeVersion != container.phpEnvs.brewPhpAlias
     }
 
     // `nonisolated`: pure version comparison read by off-main brew command orchestration.
     nonisolated var unavailableAfterUpgrade: Bool {
-        if installedVersion == nil || upgradeVersion == nil {
+        guard name.split(separator: "/").last == "php",
+              let installedVersion, case let .upgrade(version) = update,
+              let installed = try? VersionNumber.parse(installedVersion),
+              let upgrade = try? VersionNumber.parse(version) else {
             return false
         }
+        return upgrade.short != installed.short
+    }
 
-        if let installed = try? VersionNumber.parse(self.installedVersion!),
-           let upgrade = try? VersionNumber.parse(self.upgradeVersion!) {
-            return upgrade.short != installed.short
+    nonisolated var update: BrewPhpUpdate? {
+        if case let .available(update) = updateCheck {
+            return update
         }
-
-        return false
+        return nil
     }
 
     /// The associated Homebrew folder with this PHP formula.
@@ -96,7 +109,7 @@ struct BrewPhpFormula: Equatable, Sendable {
             return self.displayName.replacing("PHP ", with: "")
         }
 
-        return VersionNumber.make(from: version)?.short ?? nil
+        return (try? VersionNumber.parse(version))?.short
     }
 
     /// A quick variable that you can check to see if the install is unhealthy.
@@ -140,8 +153,10 @@ struct BrewPhpFormula: Equatable, Sendable {
         return lhs.name == rhs.name
             && lhs.displayName == rhs.displayName
             && lhs.installedVersion == rhs.installedVersion
-            && lhs.upgradeVersion == rhs.upgradeVersion
+            && lhs.updateCheck == rhs.updateCheck
+            && lhs.isPinned == rhs.isPinned
             && lhs.prerelease == rhs.prerelease
+            && lhs.mainPhpUpgradeVersion == rhs.mainPhpUpgradeVersion
             && lhs.hasFormulaFile == rhs.hasFormulaFile
     }
 }

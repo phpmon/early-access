@@ -111,6 +111,13 @@
 "phpman.buttons.update" = "Atualizar";
 "phpman.buttons.repair" = "Reparar";
 "phpman.version.prerelease" = "Pre-release";
+"phpman.version.nightly_update" = "Está disponível uma compilação nightly atualizada.";
+"phpman.version.nightly_commits" = "Commit instalado: %@
+Commit disponível: %@";
+"phpman.version.pinned" = "Este pacote está fixado no Homebrew.";
+"phpman.version.unknown" = "As informações de compilação ou atualização não estão disponíveis.";
+"phpman.check.failed" = "Não foi possível procurar atualizações do PHP. Tente atualizar novamente.";
+
 "phpman.steps.installing" = "Instalando %@";
 "phpman.steps.removing" = "Removendo %@";
 "phpman.steps.reloading" = "Recarregando as versões do PHP...";

@@ -111,6 +111,13 @@
 "phpman.buttons.update" = "अपडेट करें";
 "phpman.buttons.repair" = "मरम्मत";
 "phpman.version.prerelease" = "पूर्व-रिलीज़";
+"phpman.version.nightly_update" = "अपडेट किया गया nightly बिल्ड उपलब्ध है।";
+"phpman.version.nightly_commits" = "इंस्टॉल किया गया कमिट: %@
+उपलब्ध कमिट: %@";
+"phpman.version.pinned" = "यह पैकेज Homebrew में पिन किया गया है।";
+"phpman.version.unknown" = "बिल्ड या अपडेट की जानकारी उपलब्ध नहीं है।";
+"phpman.check.failed" = "PHP अपडेट की जाँच नहीं हो सकी। फिर से रीफ़्रेश करें।";
+
 "phpman.steps.installing" = "%@ स्थापित किया जा रहा है";
 "phpman.steps.removing" = "हटाया जा रहा है %@";
 "phpman.steps.reloading" = "PHP संस्करणों को फिर से लोड किया जा रहा है...";

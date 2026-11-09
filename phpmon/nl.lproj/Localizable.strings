@@ -111,6 +111,13 @@
 "phpman.buttons.update" = "Bijwerken";
 "phpman.buttons.repair" = "Herstellen";
 "phpman.version.prerelease" = "Pre-release";
+"phpman.version.nightly_update" = "Er is een bijgewerkte nightly-build beschikbaar.";
+"phpman.version.nightly_commits" = "Geïnstalleerde commit: %@
+Beschikbare commit: %@";
+"phpman.version.pinned" = "Dit pakket is vastgezet in Homebrew.";
+"phpman.version.unknown" = "Build- of updategegevens zijn niet beschikbaar.";
+"phpman.check.failed" = "Controleren op PHP-updates is mislukt. Probeer opnieuw te vernieuwen.";
+
 "phpman.steps.installing" = "%@ installeren";
 "phpman.steps.removing" = "Verwijderen %@";
 "phpman.steps.reloading" = "PHP-versies herladen...";

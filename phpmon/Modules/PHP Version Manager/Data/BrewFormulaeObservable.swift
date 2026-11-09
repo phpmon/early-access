@@ -9,6 +9,8 @@
 import Foundation
 
 class BrewFormulaeObservable: ObservableObject {
+    @Published var updateCheckFailed: Bool = false
+
     @Published var phpVersions: [BrewPhpFormula] = []
 
     var upgradeable: [BrewPhpFormula] {

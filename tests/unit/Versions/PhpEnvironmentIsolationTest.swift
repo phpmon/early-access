@@ -15,8 +15,12 @@ struct PhpEnvironmentIsolationTest {
     }
 
     @Test func refreshing_one_environment_does_not_change_another() async {
-        let first = Container.fake()
-        let second = Container.fake()
+        let first = Container.fake(shell: [
+            "/opt/homebrew/bin/brew info --json=v2 --installed": .instant(#"{"formulae":[]}"#)
+        ])
+        let second = Container.fake(shell: [
+            "/opt/homebrew/bin/brew info --json=v2 --installed": .instant(#"{"formulae":[]}"#)
+        ])
         first.phpEnvs.homebrewPackage = package(version: "8.3.0")
         second.phpEnvs.homebrewPackage = package(version: "8.4.0")
         let firstHandler = BrewPhpFormulaeHandler(first)

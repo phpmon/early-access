@@ -111,6 +111,13 @@
 "phpman.buttons.update" = "更新";
 "phpman.buttons.repair" = "修复";
 "phpman.version.prerelease" = "预发布";
+"phpman.version.nightly_update" = "有更新的 nightly 构建可用。";
+"phpman.version.nightly_commits" = "已安装的提交：%@
+可用的提交：%@";
+"phpman.version.pinned" = "此软件包已在 Homebrew 中固定。";
+"phpman.version.unknown" = "无法获取构建或更新信息。";
+"phpman.check.failed" = "无法检查 PHP 更新。请尝试再次刷新。";
+
 "phpman.steps.installing" = "正在安装 %@";
 "phpman.steps.removing" = "移除 %@";
 "phpman.steps.reloading" = "重载 PHP 版本...";

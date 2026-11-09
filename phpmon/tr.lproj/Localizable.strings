@@ -111,6 +111,13 @@
 "phpman.buttons.update" = "Güncelle";
 "phpman.buttons.repair" = "Tamir";
 "phpman.version.prerelease" = "Ön sürüm";
+"phpman.version.nightly_update" = "Güncellenmiş bir nightly derlemesi mevcut.";
+"phpman.version.nightly_commits" = "Yüklü commit: %@
+Mevcut commit: %@";
+"phpman.version.pinned" = "Bu paket Homebrew içinde sabitlenmiş.";
+"phpman.version.unknown" = "Derleme veya güncelleme bilgisi kullanılamıyor.";
+"phpman.check.failed" = "PHP güncellemeleri denetlenemedi. Yenilemeyi tekrar deneyin.";
+
 "phpman.steps.installing" = "%@ yükleniyor";
 "phpman.steps.removing" = "%@ siliniyor";
 "phpman.steps.reloading" = "PHP sürümleri yeniden yükleniyor...";

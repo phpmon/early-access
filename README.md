@@ -121,6 +121,8 @@ All stable and supported PHP versions are also supported by PHP Monitor. However
 
 Backports that are installable via PHP Monitor's **PHP Version Manager** functionality are subject to availability via [this tap](https://github.com/shivammathur/homebrew-php).
 
+PHP Version Manager marks development builds and release candidates as pre-release. For nightly updates, it compares the installed source commit with the commit available in the tap. Updating a nightly reinstalls the package. Bottle rebuilds from the same source commit are not detected.
+
 PHP extensions that are installable via PHP Monitor's **PHP Extension Manager** functionality are subject to availability via [this tap](https://github.com/shivammathur/homebrew-extensions).
 
 For maximum compatibility with older PHP versions, you may wish to keep using Valet 2 or 3. For more information, please see [SECURITY.md](./SECURITY.md) to find out which versions of PHP are supported with different versions of Valet.

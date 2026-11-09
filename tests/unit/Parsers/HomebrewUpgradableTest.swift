@@ -14,8 +14,8 @@ struct HomebrewUpgradableTest {
     init() throws {
         container = Container.fake(
             shell: [
-                "/opt/homebrew/bin/brew update >/dev/null && /opt/homebrew/bin/brew outdated --json --formulae"
-                : .instant(try! String(contentsOf: Self.outdatedFileUrl)),
+                "/opt/homebrew/bin/brew update >/dev/null && /opt/homebrew/bin/brew info --json=v2 --installed"
+                : .instant(try! String(contentsOf: Self.formulaeFileUrl)),
                 "/opt/homebrew/bin/php --ini | grep -E -o '(/[^ ]+\\.ini)'"
                 : .instant("/opt/homebrew/etc/php/8.2/conf.d/php-memory-limits.ini"),
                 "/opt/homebrew/opt/php@8.1.16/bin/php --ini | grep -E -o '(/[^ ]+\\.ini)'"
@@ -33,8 +33,8 @@ struct HomebrewUpgradableTest {
         )
     }
 
-    static var outdatedFileUrl: URL {
-        return TestBundle.url(forResource: "brew-outdated", withExtension: "json")!
+    static var formulaeFileUrl: URL {
+        return TestBundle.url(forResource: "brew-php-info", withExtension: "json")!
     }
 
     @Test func upgradable_php_versions_can_be_determined() async throws {
@@ -51,11 +51,11 @@ struct HomebrewUpgradableTest {
             .loadPhpVersions(loadOutdated: true)
 
         #expect(true == data.contains(where: { formula in
-            formula.installedVersion == "8.1.16" && formula.upgradeVersion == "8.1.17"
+            formula.installedVersion == "8.1.16" && formula.update == .upgrade(version: "8.1.17")
         }))
 
         #expect(true == data.contains(where: { formula in
-            formula.installedVersion == "8.2.3" && formula.upgradeVersion == "8.2.4"
+            formula.installedVersion == "8.2.3" && formula.update == .upgrade(version: "8.2.4")
         }))
     }
 }

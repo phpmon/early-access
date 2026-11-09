@@ -121,6 +121,18 @@ public nonisolated class TestableShell: ShellProtocol, @unchecked Sendable {
 
         applyTransactions(for: expectation)
 
+        if let exitCode = expectation.exitCode, exitCode != 0 {
+            let process = try await runBlocking {
+                let process = Process()
+                process.executableURL = URL(fileURLWithPath: "/bin/sh")
+                process.arguments = ["-c", "exit \(exitCode)"]
+                try process.run()
+                process.waitUntilExit()
+                return process
+            }
+            return (process, output)
+        }
+
         return (Self.exitedProcess, output)
     }
 
@@ -161,6 +173,7 @@ nonisolated struct FakeShellOutput: Codable, Sendable {
 nonisolated struct BatchFakeShellOutput: Codable, Sendable {
     var items: [FakeShellOutput]
     var transactions: [FakeShellTransaction] = []
+    var exitCode: Int32?
 
     static func with(_ items: [FakeShellOutput]) -> BatchFakeShellOutput {
         return BatchFakeShellOutput(items: items)

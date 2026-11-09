@@ -111,6 +111,13 @@
 "phpman.buttons.update" = "আপডেট";
 "phpman.buttons.repair" = "মেরামত";
 "phpman.version.prerelease" = "প্রি-রিলিজ";
+"phpman.version.nightly_update" = "হালনাগাদ nightly বিল্ড উপলব্ধ।";
+"phpman.version.nightly_commits" = "ইনস্টল করা কমিট: %@
+উপলব্ধ কমিট: %@";
+"phpman.version.pinned" = "এই প্যাকেজটি Homebrew-তে পিন করা আছে।";
+"phpman.version.unknown" = "বিল্ড বা আপডেটের তথ্য উপলব্ধ নয়।";
+"phpman.check.failed" = "PHP আপডেট পরীক্ষা করা যায়নি। আবার রিফ্রেশ করুন।";
+
 "phpman.steps.installing" = "%@ ইনস্টল করা হচ্ছে";
 "phpman.steps.removing" = "অপসারণ হচ্ছে %@";
 "phpman.steps.reloading" = "PHP সংস্করণগুলো পুনরায় লোড করা হচ্ছে...";

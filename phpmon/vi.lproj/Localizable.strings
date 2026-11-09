@@ -111,6 +111,13 @@
 "phpman.buttons.update" = "Cập nhật";
 "phpman.buttons.repair" = "Sửa chữa";
 "phpman.version.prerelease" = "Pre-release";
+"phpman.version.nightly_update" = "Có bản dựng nightly mới.";
+"phpman.version.nightly_commits" = "Commit đã cài đặt: %@
+Commit có sẵn: %@";
+"phpman.version.pinned" = "Gói này được ghim trong Homebrew.";
+"phpman.version.unknown" = "Không có thông tin về bản dựng hoặc bản cập nhật.";
+"phpman.check.failed" = "Không thể kiểm tra bản cập nhật PHP. Hãy thử làm mới lại.";
+
 "phpman.steps.installing" = "Đang cài đặt %@";
 "phpman.steps.removing" = "Đang xóa %@";
 "phpman.steps.reloading" = "Đang tải lại các phiên bản PHP...";

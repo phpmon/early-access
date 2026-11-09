@@ -76,7 +76,7 @@ struct PhpVersionDetectionTest {
 
         let formula = BrewPhpFormula(
             container, name: "php@8.4", displayName: "PHP 8.4",
-            installedVersion: "8.4.2", upgradeVersion: nil
+            installedVersion: "8.4.2", updateCheck: .unknown
         )
         #expect(formula.isInstalled)
         #expect(!formula.healthy)

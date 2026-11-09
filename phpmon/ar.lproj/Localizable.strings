@@ -111,6 +111,13 @@
 "phpman.buttons.update" = "تحديث";
 "phpman.buttons.repair" = "إصلاح";
 "phpman.version.prerelease" = "الإصدار التجريبي";
+"phpman.version.nightly_update" = "يتوفر إصدار nightly محدّث.";
+"phpman.version.nightly_commits" = "الالتزام المثبّت: %@
+الالتزام المتاح: %@";
+"phpman.version.pinned" = "هذه الحزمة مثبّتة على إصدار محدد في Homebrew.";
+"phpman.version.unknown" = "معلومات البناء أو التحديث غير متوفرة.";
+"phpman.check.failed" = "تعذر البحث عن تحديثات PHP. حاول التحديث مجددًا.";
+
 "phpman.steps.installing" = "تثبيت %@";
 "phpman.steps.removing" = "إزالة %@";
 "phpman.steps.reloading" = "جارٍ إعادة تحميل إصدارات PHP...";

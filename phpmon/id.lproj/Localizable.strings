@@ -111,6 +111,13 @@
 "phpman.buttons.update" = "Perbarui";
 "phpman.buttons.repair" = "Perbaiki";
 "phpman.version.prerelease" = "Pra-rilis";
+"phpman.version.nightly_update" = "Build nightly yang diperbarui tersedia.";
+"phpman.version.nightly_commits" = "Commit terinstal: %@
+Commit tersedia: %@";
+"phpman.version.pinned" = "Paket ini disematkan di Homebrew.";
+"phpman.version.unknown" = "Informasi build atau pembaruan tidak tersedia.";
+"phpman.check.failed" = "Tidak dapat memeriksa pembaruan PHP. Coba segarkan lagi.";
+
 "phpman.steps.installing" = "Memasang %@";
 "phpman.steps.removing" = "Menghapus %@";
 "phpman.steps.reloading" = "Memuat ulang versi PHP...";

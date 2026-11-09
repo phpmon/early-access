@@ -214,7 +214,9 @@ struct PhpVersionManagerView: View {
             .focusable(false)
             .disabled(self.status.busy)
 
-            Text("phpman.refresh.button.description".localizedForSwiftUI)
+            Text((formulae.updateCheckFailed
+                  ? "phpman.check.failed"
+                  : "phpman.refresh.button.description").localizedForSwiftUI)
                 .foregroundColor(.gray)
                 .font(.system(size: 11))
         }
@@ -277,7 +279,7 @@ struct PhpVersionManagerView: View {
             HStack {
                 Text(formula.displayName).bold()
 
-                if formula.prerelease {
+                if formula.prerelease == true {
                     prereleaseBadge
                 }
             }
@@ -286,13 +288,14 @@ struct PhpVersionManagerView: View {
                 Text("phpman.version.automatic_upgrade".localized(formula.shortVersion!))
                     .font(.system(size: 11))
                     .foregroundColor(.gray)
-            } else if formula.isInstalled && formula.hasUpgrade {
-                Text("phpman.version.has_update".localized(
-                    formula.installedVersion!,
-                    formula.upgradeVersion!
-                ))
-                .font(.system(size: 11))
-                .foregroundColor(.gray)
+            } else if formula.isPinned {
+                Text("phpman.version.pinned".localizedForSwiftUI)
+                    .font(.system(size: 11))
+                    .foregroundColor(.gray)
+            } else if formula.isInstalled, let update = formula.update {
+                updateDescription(update, installedVersion: formula.installedVersion!)
+                    .font(.system(size: 11))
+                    .foregroundColor(.gray)
             } else if formula.isInstalled && formula.installedVersion != nil {
                 Text("phpman.version.installed".localized(formula.installedVersion!))
                     .font(.system(size: 11))
@@ -305,6 +308,12 @@ struct PhpVersionManagerView: View {
                     .foregroundColor(.gray)
             }
 
+            if formula.prerelease == nil || (formula.isInstalled && formula.updateCheck == .unknown) {
+                Text("phpman.version.unknown".localizedForSwiftUI)
+                    .font(.system(size: 11))
+                    .foregroundColor(.gray)
+            }
+
             if !formula.healthy {
                 Text("phpman.version.broken".localizedForSwiftUI)
                     .font(.system(size: 11))
@@ -312,6 +321,17 @@ struct PhpVersionManagerView: View {
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    @ViewBuilder
+    private func updateDescription(_ update: BrewPhpUpdate, installedVersion: String) -> some View {
+        switch update {
+        case let .upgrade(version), let .reinstallRelease(version):
+            Text("phpman.version.has_update".localized(installedVersion, version))
+        case let .reinstallSnapshot(installedCommit, availableCommit):
+            Text("phpman.version.nightly_update".localizedForSwiftUI)
+                .help("phpman.version.nightly_commits".localized(String(installedCommit.prefix(12)), String(availableCommit.prefix(12))))
+        }
     }
 
     private func formulaIcon(for formula: BrewPhpFormula) -> some View {

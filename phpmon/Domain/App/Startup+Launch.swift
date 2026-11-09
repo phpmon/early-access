@@ -125,9 +125,6 @@ extension Startup {
             Log.info("The services manager knows about \(ServicesManager.shared.services.count) services.")
         }
 
-        // Keep track of which PHP versions are currently about to release
-        Log.info("Experimental PHP versions are: \(Constants.ExperimentalPhpVersions)")
-
         // Internals are ready!
         container.phpEnvs.isBusy = false
 
