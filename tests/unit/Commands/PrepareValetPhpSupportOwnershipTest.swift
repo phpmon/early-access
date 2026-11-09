@@ -250,8 +250,8 @@ extension PrepareValetPhpSupportTest {
         let container = makeContainer()
         let edits = ValetPhpSupportEdits(container: container)
         let initial = source()
-        let with86 = try ValetPhpVersionList(initial).adding(["8.6"])
-        let withBoth = try ValetPhpVersionList(with86).adding(["8.7"])
+        let with86 = try ValetPhpVersionList(initial).adding(["8.6"]).content
+        let withBoth = try ValetPhpVersionList(with86).adding(["8.7"]).content
         try edits.record(file: sourcePath, valetVersion: "4.12.0", before: (with86, ["8.6"]), after: (withBoth, ["8.6", "8.7"]))
         #expect(try edits.ownedVersions(at: sourcePath, valetVersion: "4.12.0", content: with86) == ["8.6"])
         #expect(try edits.ownedVersions(at: sourcePath, valetVersion: "4.12.0", content: withBoth) == ["8.6", "8.7"])

@@ -68,18 +68,16 @@ class PrepareValetPhpSupportCommand: BrewCommand {
         let requiredVersions = versions.union(installedTemporaryVersions)
         guard !requiredVersions.isSubset(of: list.versions) else { return }
 
-        if try await updateIfNeeded(current: current, composer: composer, shell: shell, onProgress) {
+        if let installed = try await updateIfNeeded(current: current, composer: composer, shell: shell, onProgress) {
             // Composer may have replaced the package, moved it, or added support itself.
             source = try await readSource(composer: composer, shell: shell)
             list = try ValetPhpVersionList(source.content)
-            guard let installed = container.valet.version else { throw ValetPhpSupportError.unrecognizedInstallation }
             current = installed
             owned = try await ownedVersions(in: source, valetVersion: current.text)
         }
 
-        let updated = try list.adding(requiredVersions, temporaryVersions: owned)
-        guard updated != source.content else { return }
-        let missing = try list.missingVersions(from: requiredVersions, temporaryVersions: owned)
+        let (updated, missing) = try list.adding(requiredVersions, temporaryVersions: owned)
+        guard !missing.isEmpty else { return }
         let valetVersion = current.text
         guard await approval(.addVersions(missing.sorted(), valetVersion: valetVersion, file: source.path)) else {
             throw ValetPhpSupportError.cancelled
@@ -150,14 +148,14 @@ class PrepareValetPhpSupportCommand: BrewCommand {
         composer: String,
         shell: ShellProtocol,
         _ onProgress: @escaping @Sendable (BrewCommandProgress) -> Void
-    ) async throws -> Bool {
+    ) async throws -> VersionNumber? {
         let latest = try await Packagist.getLatestStableVersion(packageName: "laravel/valet", container: container)
         guard latest.major == current.major,
               Constants.ValetSupportedPhpVersionMatrix[latest.major] != nil else {
             throw ValetPhpSupportError.manualMajorUpgradeRequired
         }
         container.valet.latestVersion = latest
-        guard current.isOlderThan(latest) else { return false }
+        guard current.isOlderThan(latest) else { return nil }
         guard await approval(.update(current: current.text, latest: latest.text)) else {
             throw ValetPhpSupportError.cancelled
         }
@@ -167,7 +165,7 @@ class PrepareValetPhpSupportCommand: BrewCommand {
         guard !installed.isOlderThan(latest), installed.major == latest.major else {
             throw ValetPhpSupportError.updateIncomplete
         }
-        return true
+        return installed
     }
 
     /// Undo only recorded additions after the corresponding PHP installations are gone.

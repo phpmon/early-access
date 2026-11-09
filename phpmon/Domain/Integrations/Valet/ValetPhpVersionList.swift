@@ -66,13 +66,13 @@ nonisolated struct ValetPhpVersionList {
         return missing
     }
 
-    func adding(_ requested: Set<String>, temporaryVersions: Set<String> = []) throws -> String {
+    func adding(_ requested: Set<String>, temporaryVersions: Set<String> = []) throws -> (content: String, addedVersions: Set<String>) {
         let missing = try missingVersions(from: requested, temporaryVersions: temporaryVersions)
         let entries = missing.sorted { $0.versionCompare($1) == .orderedDescending }
             .map { "        'php@\($0)',\n" }.joined()
         var updated = content
         updated.insert(contentsOf: entries, at: insertionIndex)
-        return updated
+        return (updated, missing)
     }
 
     func removing(_ requested: Set<String>) -> String {
