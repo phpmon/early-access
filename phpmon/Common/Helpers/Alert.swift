@@ -17,7 +17,8 @@ class Alert {
         buttonIsDestructive: Bool = false,
         secondButtonTitle: String = "generic.cancel".localized,
         style: NSAlert.Style = .warning,
-        onFirstButtonPressed: @escaping (() -> Void)
+        onFirstButtonPressed: @escaping (() -> Void),
+        onCancel: (() -> Void)? = nil
     ) {
         if !Thread.isMainThread {
             fatalError("You should always present alerts on the main thread!")
@@ -35,7 +36,33 @@ class Alert {
         alert.beginSheetModal(for: window) { response in
             if response == .alertFirstButtonReturn {
                 onFirstButtonPressed()
+            } else {
+                onCancel?()
             }
+        }
+    }
+
+    public static func confirm(
+        onWindow window: NSWindow,
+        messageText: String,
+        informativeText: String,
+        buttonTitle: String = "generic.ok".localized,
+        buttonIsDestructive: Bool = false,
+        secondButtonTitle: String = "generic.cancel".localized,
+        style: NSAlert.Style = .warning
+    ) async -> Bool {
+        return await withCheckedContinuation { continuation in
+            confirm(
+                onWindow: window,
+                messageText: messageText,
+                informativeText: informativeText,
+                buttonTitle: buttonTitle,
+                buttonIsDestructive: buttonIsDestructive,
+                secondButtonTitle: secondButtonTitle,
+                style: style,
+                onFirstButtonPressed: { continuation.resume(returning: true) },
+                onCancel: { continuation.resume(returning: false) }
+            )
         }
     }
 

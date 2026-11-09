@@ -202,17 +202,14 @@ extension PhpVersionManagerView {
             description = "phpman.valet.confirm_patch.description".localized(valetVersion, versions.joined(separator: ", "), file)
             button = "phpman.valet.confirm_patch.button".localized
         }
-        return await withCheckedContinuation { continuation in
-            let alert = NSAlert()
-            alert.alertStyle = .warning
-            alert.messageText = title
-            alert.informativeText = description
-            alert.addButton(withTitle: button)
-            alert.addButton(withTitle: "generic.cancel".localized)
-            alert.beginSheetModal(for: window) { response in
-                continuation.resume(returning: response == .alertFirstButtonReturn)
-            }
-        }
+        return await Alert.confirm(
+            onWindow: window,
+            messageText: title,
+            informativeText: description,
+            buttonTitle: button,
+            secondButtonTitle: "generic.cancel".localized,
+            style: .warning
+        )
     }
 
     /**
