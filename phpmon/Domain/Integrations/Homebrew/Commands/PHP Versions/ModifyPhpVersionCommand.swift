@@ -19,6 +19,8 @@ class ModifyPhpVersionCommand: BrewCommand {
     let title: String
     let installing: [BrewPhpFormula]
     let upgrading: [BrewPhpFormula]
+    let requestedPhpVersions: Set<String>
+    var approveValetChange: ValetPhpSupportApproval = { _ in false }
 
     /// The PHP version linked when this command was created, snapshotted on the main actor
     /// at init time. Storing the `Sendable` `String?` (instead of the non-Sendable
@@ -58,6 +60,22 @@ class ModifyPhpVersionCommand: BrewCommand {
         self.installing = installing
         self.upgrading = upgrading
         self.previousPhpVersion = PhpGuard(container: container).currentVersion
+        var requested: Set<String> = []
+        for formula in installing + upgrading.filter({ !$0.isPinned }) {
+            if let version = formula.shortVersion { requested.insert(version) }
+            if case let .upgrade(version) = formula.update,
+               let target = try? VersionNumber.parse(version) {
+                requested.insert(target.short)
+            }
+        }
+        // Installing an older CLI-only PHP must not expand what this Valet major supports.
+        // Keep newer series so preparation can require a Valet update before PHP changes.
+        if let major = container.valet.version?.major,
+           let supported = Constants.ValetSupportedPhpVersionMatrix[major],
+           let minimum = supported.compactMap({ VersionNumber.make(from: $0) }).min(by: { $0.isOlderThan($1) }) {
+            requested = Set(requested.filter { VersionNumber.make(from: $0)?.isOlderThan(minimum) == false })
+        }
+        self.requestedPhpVersions = requested
     }
 
     nonisolated func execute(shell: ShellProtocol, onProgress: @escaping @Sendable (BrewCommandProgress) -> Void) async throws {
@@ -68,6 +86,11 @@ class ModifyPhpVersionCommand: BrewCommand {
             title: progressTitle,
             description: "phpman.steps.preparing".localized
         ))
+
+        // Prepare Valet while the current working PHP installation is still available.
+        let approval = await approveValetChange
+        try await PrepareValetPhpSupportCommand(container, versions: requestedPhpVersions, approval: approval)
+            .execute(shell: shell, onProgress: onProgress)
 
         // Make sure the tap is installed.
         try await self.checkPhpTap(shell: shell, onProgress)

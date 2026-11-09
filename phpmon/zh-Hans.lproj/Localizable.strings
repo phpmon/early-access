@@ -117,7 +117,16 @@
 "phpman.version.pinned" = "此软件包已在 Homebrew 中固定。";
 "phpman.version.unknown" = "无法获取构建或更新信息。";
 "phpman.check.failed" = "无法检查 PHP 更新。请尝试再次刷新。";
-
+"phpman.valet.checking" = "正在检查 Valet 的 PHP 支持情况...";
+"phpman.valet.updating" = "正在更改 PHP 之前更新 Valet...";
+"phpman.valet.patching" = "正在将请求的 PHP 版本添加到 Valet...";
+"phpman.valet.confirm_update.title" = "更新 Valet？";
+"phpman.valet.confirm_update.description" = "Valet %@ 已过时。请先更新到 %@ 再继续。Composer 也可能更新 Valet 的依赖项。";
+"phpman.valet.confirm_update.button" = "更新 Valet";
+"phpman.valet.confirm_patch.title" = "允许临时 Valet 支持？";
+"phpman.valet.confirm_patch.description" = "Valet %@ 尚未正式支持 PHP %@。\n\nPHP Monitor 可以通过编辑此文件添加临时支持：\n%@\n\n这不保证兼容性。如果文件未被更改，PHP Monitor 将在卸载这些 PHP 版本时移除其添加的条目。";
+"phpman.valet.confirm_patch.button" = "允许更改";
+"phpman.valet.cleanup_failed" = "PHP 已移除，但无法自动移除其临时 Valet 支持。";
 "phpman.steps.installing" = "正在安装 %@";
 "phpman.steps.removing" = "移除 %@";
 "phpman.steps.reloading" = "重载 PHP 版本...";

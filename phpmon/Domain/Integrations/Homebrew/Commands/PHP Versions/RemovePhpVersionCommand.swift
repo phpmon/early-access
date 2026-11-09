@@ -32,14 +32,15 @@ class RemovePhpVersionCommand: BrewCommand {
 
     init(
         _ container: Container,
-        formula: String
+        formula: String,
+        version: String? = nil
     ) {
         self.container = container
-        self.version = formula
+        self.version = version ?? formula
             .replacing("php@", with: "")
             .replacing("shivammathur/php/", with: "")
         self.formula = formula
-        self.previousPhpVersion = PhpGuard().currentVersion
+        self.previousPhpVersion = PhpGuard(container: container).currentVersion
     }
 
     nonisolated func getCommandTitle() -> String {
@@ -95,6 +96,15 @@ class RemovePhpVersionCommand: BrewCommand {
             onProgress(.create(value: 0.95, title: getCommandTitle(), description: "phpman.steps.reloading".localized))
 
             await container.phpEnvs.detectPhpVersions()
+
+            do {
+                try await PrepareValetPhpSupportCommand(container, versions: [version]).removeOwnedSupport(shell: shell)
+            } catch {
+                throw BrewCommandError(
+                    error: "PHP was removed, but its temporary Valet support could not be cleaned up.",
+                    log: ["phpman.valet.cleanup_failed".localized, error.localizedDescription]
+                )
+            }
 
             await MainMenu.shared.refreshActiveInstallation()
 

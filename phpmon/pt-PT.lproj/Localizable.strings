@@ -117,7 +117,16 @@ Commit disponível: %@";
 "phpman.version.pinned" = "Este pacote está fixado no Homebrew.";
 "phpman.version.unknown" = "As informações de compilação ou atualização não estão disponíveis.";
 "phpman.check.failed" = "Não foi possível procurar atualizações do PHP. Tente atualizar novamente.";
-
+"phpman.valet.checking" = "A verificar o suporte PHP no Valet...";
+"phpman.valet.updating" = "A atualizar o Valet antes de alterar o PHP...";
+"phpman.valet.patching" = "A adicionar as versões PHP pedidas ao Valet...";
+"phpman.valet.confirm_update.title" = "Atualizar o Valet?";
+"phpman.valet.confirm_update.description" = "O Valet %@ está desatualizado. Atualize para %@ antes de continuar. O Composer também pode atualizar as dependências do Valet.";
+"phpman.valet.confirm_update.button" = "Atualizar o Valet";
+"phpman.valet.confirm_patch.title" = "Permitir suporte temporário no Valet?";
+"phpman.valet.confirm_patch.description" = "O Valet %@ não suporta oficialmente o PHP %@.\n\nO PHP Monitor pode adicionar suporte temporário ao alterar este ficheiro:\n%@\n\nIsto não garante compatibilidade. O PHP Monitor remove as suas entradas quando estas versões PHP forem desinstaladas, se o ficheiro não tiver sido alterado.";
+"phpman.valet.confirm_patch.button" = "Permitir alteração";
+"phpman.valet.cleanup_failed" = "O PHP foi removido, mas o seu suporte temporário no Valet não pôde ser removido automaticamente.";
 "phpman.steps.installing" = "Instalando %@";
 "phpman.steps.removing" = "Removendo %@";
 "phpman.steps.reloading" = "Recarregando as versões do PHP...";

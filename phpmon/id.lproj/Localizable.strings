@@ -117,7 +117,16 @@ Commit tersedia: %@";
 "phpman.version.pinned" = "Paket ini disematkan di Homebrew.";
 "phpman.version.unknown" = "Informasi build atau pembaruan tidak tersedia.";
 "phpman.check.failed" = "Tidak dapat memeriksa pembaruan PHP. Coba segarkan lagi.";
-
+"phpman.valet.checking" = "Memeriksa dukungan PHP di Valet...";
+"phpman.valet.updating" = "Memperbarui Valet sebelum mengubah PHP...";
+"phpman.valet.patching" = "Menambahkan versi PHP yang diminta ke Valet...";
+"phpman.valet.confirm_update.title" = "Perbarui Valet?";
+"phpman.valet.confirm_update.description" = "Valet %@ sudah usang. Perbarui ke %@ sebelum melanjutkan. Composer juga dapat memperbarui dependensi Valet.";
+"phpman.valet.confirm_update.button" = "Perbarui Valet";
+"phpman.valet.confirm_patch.title" = "Izinkan dukungan Valet sementara?";
+"phpman.valet.confirm_patch.description" = "Valet %@ tidak mendukung PHP %@ secara resmi.\n\nPHP Monitor dapat menambahkan dukungan sementara dengan mengedit file ini:\n%@\n\nIni tidak menjamin kompatibilitas. PHP Monitor akan menghapus entri yang ditambahkannya saat versi PHP tersebut dihapus, selama file belum berubah.";
+"phpman.valet.confirm_patch.button" = "Izinkan Perubahan";
+"phpman.valet.cleanup_failed" = "PHP telah dihapus, tetapi dukungan Valet sementaranya tidak dapat dihapus secara otomatis.";
 "phpman.steps.installing" = "Memasang %@";
 "phpman.steps.removing" = "Menghapus %@";
 "phpman.steps.reloading" = "Memuat ulang versi PHP...";

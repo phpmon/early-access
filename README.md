@@ -123,6 +123,10 @@ Backports that are installable via PHP Monitor's **PHP Version Manager** functio
 
 PHP Version Manager marks development builds and release candidates as pre-release. For nightly updates, it compares the installed source commit with the commit available in the tap. Updating a nightly reinstalls the package. Bottle rebuilds from the same source commit are not detected.
 
+Before PHP Version Manager changes an installation, it checks whether Valet supports the requested PHP series. If a newer series is missing, PHP Monitor asks before updating Valet within its current major version, subject to Composer's constraints. If the latest stable Valet still lacks the series, PHP Monitor asks separately before adding temporary support and checks the PHP file for syntax errors. It records its additions across restarts and removes them when the corresponding PHP versions are uninstalled, only if the file and Valet version still match the record. Existing entries and externally changed files are left untouched. Failed checks stop the operation. Adding a series to this list does not guarantee compatibility with a pre-release PHP build.
+
+Cancelling the support-list edit does not undo an approved Valet update. That update can replace temporary support entries for PHP versions already installed. PHP Monitor includes those versions in the next edit prompt if they still need temporary support.
+
 PHP extensions that are installable via PHP Monitor's **PHP Extension Manager** functionality are subject to availability via [this tap](https://github.com/shivammathur/homebrew-extensions).
 
 For maximum compatibility with older PHP versions, you may wish to keep using Valet 2 or 3. For more information, please see [SECURITY.md](./SECURITY.md) to find out which versions of PHP are supported with different versions of Valet.

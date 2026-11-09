@@ -117,7 +117,16 @@
 "phpman.version.pinned" = "このパッケージは Homebrew で固定されています。";
 "phpman.version.unknown" = "ビルドまたは更新の情報を取得できません。";
 "phpman.check.failed" = "PHP の更新を確認できませんでした。もう一度更新してください。";
-
+"phpman.valet.checking" = "Valet の PHP サポートを確認中...";
+"phpman.valet.updating" = "PHP を変更する前に Valet を更新中...";
+"phpman.valet.patching" = "要求された PHP バージョンを Valet に追加中...";
+"phpman.valet.confirm_update.title" = "Valet を更新しますか？";
+"phpman.valet.confirm_update.description" = "Valet %@ は古いバージョンです。続行する前に %@ に更新してください。Composer が Valet の依存関係も更新する場合があります。";
+"phpman.valet.confirm_update.button" = "Valet を更新";
+"phpman.valet.confirm_patch.title" = "Valet の一時的なサポートを許可しますか？";
+"phpman.valet.confirm_patch.description" = "Valet %@ は PHP %@ を公式にはサポートしていません。\n\nPHP Monitor は次のファイルを編集して一時的なサポートを追加できます：\n%@\n\n互換性は保証されません。ファイルが変更されていなければ、これらの PHP バージョンのアンインストール時に追加項目を削除します。";
+"phpman.valet.confirm_patch.button" = "変更を許可";
+"phpman.valet.cleanup_failed" = "PHP は削除されましたが、Valet の一時的なサポートを自動削除できませんでした。";
 "phpman.steps.installing" = "%@ をインストールしています";
 "phpman.steps.removing" = "%@ を削除しています";
 "phpman.steps.reloading" = "PHP バージョンを再読み込み中…";

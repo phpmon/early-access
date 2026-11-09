@@ -23,6 +23,10 @@ class TestableWebApi: WebApiProtocol {
         self.slow = slow
     }
 
+    func setGetResponse(for url: URL, response: FakeWebApiResponse) {
+        fakeGetResponses[url] = response
+    }
+
     // MARK: - Default Headers
 
     var defaultHeaders: HttpHeaders {

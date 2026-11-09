@@ -31,6 +31,9 @@ extension PhpVersionManagerView {
             return
         }
 
+        command.approveValetChange = { change in
+            await self.confirmValetChange(change)
+        }
         do {
             self.setBusyStatus(true)
             try await withRefreshedHealthOnFailure {
@@ -52,6 +55,8 @@ extension PhpVersionManagerView {
                 // and mark the app as no longer busy
                 self.setBusyStatus(false)
             }
+        } catch ValetPhpSupportError.cancelled {
+            self.setBusyStatus(false)
         } catch let error {
             let error = error as! BrewCommandError
             let messages = error.log.suffix(2).joined(separator: "\n")
@@ -94,7 +99,7 @@ extension PhpVersionManagerView {
     }
 
     public func uninstall(_ formula: BrewPhpFormula) async {
-        let command = RemovePhpVersionCommand(container, formula: formula.name)
+        let command = RemovePhpVersionCommand(container, formula: formula.name, version: formula.shortVersion)
 
         do {
             self.setBusyStatus(true)
@@ -118,7 +123,8 @@ extension PhpVersionManagerView {
             self.presentErrorAlert(
                 title: "phpman.failures.uninstall.title".localized,
                 description: "phpman.failures.uninstall.desc".localized(
-                    "brew uninstall \(formula.name) --force"
+                    (error as? BrewCommandError)?.log.suffix(2).joined(separator: "\n")
+                        ?? "brew uninstall \(formula.name) --force"
                 ),
                 button: "generic.ok".localized
             )
@@ -178,6 +184,34 @@ extension PhpVersionManagerView {
                     Task { await self.uninstall(formula) }
                 }
             )
+        }
+    }
+
+    private func confirmValetChange(_ change: ValetPhpSupportChange) async -> Bool {
+        guard let window = WindowManager.window(for: PhpVersionManagerWC.self) else { return false }
+        let title: String
+        let description: String
+        let button: String
+        switch change {
+        case let .update(current, latest):
+            title = "phpman.valet.confirm_update.title".localized
+            description = "phpman.valet.confirm_update.description".localized(current, latest)
+            button = "phpman.valet.confirm_update.button".localized
+        case let .addVersions(versions, valetVersion, file):
+            title = "phpman.valet.confirm_patch.title".localized
+            description = "phpman.valet.confirm_patch.description".localized(valetVersion, versions.joined(separator: ", "), file)
+            button = "phpman.valet.confirm_patch.button".localized
+        }
+        return await withCheckedContinuation { continuation in
+            let alert = NSAlert()
+            alert.alertStyle = .warning
+            alert.messageText = title
+            alert.informativeText = description
+            alert.addButton(withTitle: button)
+            alert.addButton(withTitle: "generic.cancel".localized)
+            alert.beginSheetModal(for: window) { response in
+                continuation.resume(returning: response == .alertFirstButtonReturn)
+            }
         }
     }
 

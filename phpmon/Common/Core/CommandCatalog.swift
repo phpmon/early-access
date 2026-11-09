@@ -7,6 +7,28 @@
 //
 
 enum CommandCatalog {
+    enum ValetSupport {
+        static func vendorDirectory(composer: String) -> String {
+            return "\(quote(composer)) global config vendor-dir --absolute"
+        }
+
+        static func update(composer: String) -> String {
+            return "\(quote(composer)) global update laravel/valet --with-all-dependencies --no-interaction"
+        }
+
+        static func version(valet: String) -> String {
+            return "\(quote(valet)) --version"
+        }
+
+        static func lint(php: String, path: String) -> String {
+            return "\(quote(php)) -l \(quote(path))"
+        }
+
+        private static func quote(_ value: String) -> String {
+            return "'" + value.replacing("'", with: "'\"'\"'") + "'"
+        }
+    }
+
     enum Toolchain {
         static let commandLineToolsStatus = "/usr/bin/xcode-select -p"
     }

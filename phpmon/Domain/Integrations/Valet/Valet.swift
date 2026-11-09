@@ -252,7 +252,7 @@ class Valet {
      */
     public func checkForUpdates() async {
         if let currentVersion = self.version,
-            let latestVersion = try? await Packagist.getLatestStableVersion(packageName: "laravel/valet") {
+            let latestVersion = try? await Packagist.getLatestStableVersion(packageName: "laravel/valet", container: container) {
             self.latestVersion = latestVersion
 
             if latestVersion.isNewerThan(currentVersion) {

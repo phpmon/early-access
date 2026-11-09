@@ -156,6 +156,16 @@ and restart PHP Monitor for extensions to become visible. If the problem persist
 "phpman.version.pinned" = "This package is pinned in Homebrew.";
 "phpman.version.unknown" = "Build or update information is unavailable.";
 "phpman.check.failed" = "Could not check for PHP updates. Try refreshing again.";
+"phpman.valet.checking" = "Checking Valet PHP support...";
+"phpman.valet.updating" = "Updating Valet before changing PHP...";
+"phpman.valet.patching" = "Adding the requested PHP versions to Valet...";
+"phpman.valet.confirm_update.title" = "Update Valet?";
+"phpman.valet.confirm_update.description" = "Valet %@ is out of date. Update to %@ before continuing. Composer may also update Valet's dependencies.";
+"phpman.valet.confirm_update.button" = "Update Valet";
+"phpman.valet.confirm_patch.title" = "Allow temporary Valet support?";
+"phpman.valet.confirm_patch.description" = "Valet %@ does not officially support PHP %@.\n\nPHP Monitor can add temporary support by editing this file:\n%@\n\nThis does not guarantee compatibility. PHP Monitor will remove its entries when these PHP versions are uninstalled, provided the file has not changed.";
+"phpman.valet.confirm_patch.button" = "Allow Change";
+"phpman.valet.cleanup_failed" = "PHP was removed, but its temporary Valet support could not be removed automatically.";
 
 "phpman.steps.installing" = "Installing %@";
 "phpman.steps.removing" = "Removing %@";

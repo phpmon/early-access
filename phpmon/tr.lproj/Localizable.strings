@@ -117,7 +117,16 @@ Mevcut commit: %@";
 "phpman.version.pinned" = "Bu paket Homebrew içinde sabitlenmiş.";
 "phpman.version.unknown" = "Derleme veya güncelleme bilgisi kullanılamıyor.";
 "phpman.check.failed" = "PHP güncellemeleri denetlenemedi. Yenilemeyi tekrar deneyin.";
-
+"phpman.valet.checking" = "Valet PHP desteği denetleniyor...";
+"phpman.valet.updating" = "PHP değiştirilmeden önce Valet güncelleniyor...";
+"phpman.valet.patching" = "İstenen PHP sürümleri Valet’e ekleniyor...";
+"phpman.valet.confirm_update.title" = "Valet güncellensin mi?";
+"phpman.valet.confirm_update.description" = "Valet %@ güncel değil. Devam etmeden önce %@ sürümüne güncelleyin. Composer, Valet bağımlılıklarını da güncelleyebilir.";
+"phpman.valet.confirm_update.button" = "Valet’i Güncelle";
+"phpman.valet.confirm_patch.title" = "Geçici Valet desteğine izin verilsin mi?";
+"phpman.valet.confirm_patch.description" = "Valet %@, PHP %@ sürümünü resmî olarak desteklemiyor.\n\nPHP Monitor bu dosyayı düzenleyerek geçici destek ekleyebilir:\n%@\n\nBu, uyumluluğu garanti etmez. Dosya değişmemişse PHP Monitor bu PHP sürümleri kaldırıldığında eklediği girdileri kaldırır.";
+"phpman.valet.confirm_patch.button" = "Değişikliğe İzin Ver";
+"phpman.valet.cleanup_failed" = "PHP kaldırıldı ancak geçici Valet desteği otomatik olarak kaldırılamadı.";
 "phpman.steps.installing" = "%@ yükleniyor";
 "phpman.steps.removing" = "%@ siliniyor";
 "phpman.steps.reloading" = "PHP sürümleri yeniden yükleniyor...";

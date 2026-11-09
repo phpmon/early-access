@@ -117,7 +117,16 @@ Commit có sẵn: %@";
 "phpman.version.pinned" = "Gói này được ghim trong Homebrew.";
 "phpman.version.unknown" = "Không có thông tin về bản dựng hoặc bản cập nhật.";
 "phpman.check.failed" = "Không thể kiểm tra bản cập nhật PHP. Hãy thử làm mới lại.";
-
+"phpman.valet.checking" = "Đang kiểm tra hỗ trợ PHP của Valet...";
+"phpman.valet.updating" = "Đang cập nhật Valet trước khi thay đổi PHP...";
+"phpman.valet.patching" = "Đang thêm các phiên bản PHP được yêu cầu vào Valet...";
+"phpman.valet.confirm_update.title" = "Cập nhật Valet?";
+"phpman.valet.confirm_update.description" = "Valet %@ đã cũ. Hãy cập nhật lên %@ trước khi tiếp tục. Composer cũng có thể cập nhật các thành phần phụ thuộc của Valet.";
+"phpman.valet.confirm_update.button" = "Cập nhật Valet";
+"phpman.valet.confirm_patch.title" = "Cho phép hỗ trợ Valet tạm thời?";
+"phpman.valet.confirm_patch.description" = "Valet %@ không chính thức hỗ trợ PHP %@.\n\nPHP Monitor có thể thêm hỗ trợ tạm thời bằng cách sửa tệp này:\n%@\n\nĐiều này không đảm bảo khả năng tương thích. PHP Monitor sẽ xóa các mục đã thêm khi gỡ cài đặt các phiên bản PHP đó, nếu tệp chưa thay đổi.";
+"phpman.valet.confirm_patch.button" = "Cho phép thay đổi";
+"phpman.valet.cleanup_failed" = "PHP đã bị xóa nhưng không thể tự động xóa hỗ trợ Valet tạm thời.";
 "phpman.steps.installing" = "Đang cài đặt %@";
 "phpman.steps.removing" = "Đang xóa %@";
 "phpman.steps.reloading" = "Đang tải lại các phiên bản PHP...";

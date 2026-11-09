@@ -9,23 +9,21 @@
 import Foundation
 
 class Packagist {
-    static func getLatestStableVersion(packageName: String) async throws -> VersionNumber {
+    static func getLatestStableVersion(
+        packageName: String,
+        container: Container
+    ) async throws -> VersionNumber {
         guard let encodedName = packageName.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed),
               let url = URL(string: "https://repo.packagist.org/p2/\(encodedName).json") else {
             throw PackagistError.invalidURL
         }
 
-        let agent = "phpmon/\(App.shortVersion)"
-
-        var request = URLRequest(url: url)
-        request.setValue(agent, forHTTPHeaderField: "User-Agent")
-
         do {
-            let (data, response) = try await URLSession.shared.data(for: request)
-
-            guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
-                let code = (response as? HTTPURLResponse)?.statusCode ?? 0
-                throw PackagistError.networkError(NSError(domain: "", code: code, userInfo: nil))
+            let response = try await container.webApi.get(
+                url, withHeaders: ["User-Agent": "phpmon/\(App.shortVersion)"], withTimeout: .seconds(30)
+            )
+            guard response.statusCode == 200, let data = response.data else {
+                throw PackagistError.networkError(NSError(domain: "", code: response.statusCode, userInfo: nil))
             }
 
             let decodedResponse = try JSONDecoder()

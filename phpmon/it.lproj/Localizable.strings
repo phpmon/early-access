@@ -117,7 +117,16 @@ Commit disponibile: %@";
 "phpman.version.pinned" = "Questo pacchetto è bloccato in Homebrew.";
 "phpman.version.unknown" = "Le informazioni sulla build o sugli aggiornamenti non sono disponibili.";
 "phpman.check.failed" = "Impossibile cercare aggiornamenti di PHP. Prova ad aggiornare di nuovo.";
-
+"phpman.valet.checking" = "Verifica del supporto PHP in Valet...";
+"phpman.valet.updating" = "Aggiornamento di Valet prima di modificare PHP...";
+"phpman.valet.patching" = "Aggiunta delle versioni PHP richieste a Valet...";
+"phpman.valet.confirm_update.title" = "Aggiornare Valet?";
+"phpman.valet.confirm_update.description" = "Valet %@ non è aggiornato. Aggiorna a %@ prima di continuare. Composer potrebbe aggiornare anche le sue dipendenze.";
+"phpman.valet.confirm_update.button" = "Aggiorna Valet";
+"phpman.valet.confirm_patch.title" = "Consentire il supporto temporaneo in Valet?";
+"phpman.valet.confirm_patch.description" = "Valet %@ non supporta ufficialmente PHP %@.\n\nPHP Monitor può aggiungere un supporto temporaneo modificando questo file:\n%@\n\nLa compatibilità non è garantita. PHP Monitor rimuoverà le proprie voci quando queste versioni PHP verranno disinstallate, se il file non è cambiato.";
+"phpman.valet.confirm_patch.button" = "Consenti modifica";
+"phpman.valet.cleanup_failed" = "PHP è stato rimosso, ma il suo supporto temporaneo in Valet non è stato rimosso automaticamente.";
 "phpman.steps.installing" = "Installazione di %@";
 "phpman.steps.removing" = "Rimozione di %@";
 "phpman.steps.reloading" = "Ricaricamento delle versioni PHP...";

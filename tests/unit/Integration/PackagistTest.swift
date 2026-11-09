@@ -11,7 +11,8 @@ import Testing
 struct PackagistTest {
     @Test func canRetrieveLaravelValetVersion() async {
         let packageToCheck = "laravel/valet"
-        let latestVersion = try? await Packagist.getLatestStableVersion(packageName: packageToCheck)
+        let container = Container.real(minimal: true)
+        let latestVersion = try? await Packagist.getLatestStableVersion(packageName: packageToCheck, container: container)
 
         #expect(latestVersion != nil)
     }

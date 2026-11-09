@@ -117,7 +117,16 @@
 "phpman.version.pinned" = "এই প্যাকেজটি Homebrew-তে পিন করা আছে।";
 "phpman.version.unknown" = "বিল্ড বা আপডেটের তথ্য উপলব্ধ নয়।";
 "phpman.check.failed" = "PHP আপডেট পরীক্ষা করা যায়নি। আবার রিফ্রেশ করুন।";
-
+"phpman.valet.checking" = "Valet-এর PHP সমর্থন পরীক্ষা করা হচ্ছে...";
+"phpman.valet.updating" = "PHP পরিবর্তনের আগে Valet আপডেট করা হচ্ছে...";
+"phpman.valet.patching" = "অনুরোধ করা PHP সংস্করণগুলি Valet-এ যোগ করা হচ্ছে...";
+"phpman.valet.confirm_update.title" = "Valet আপডেট করবেন?";
+"phpman.valet.confirm_update.description" = "Valet %@ পুরোনো। চালিয়ে যাওয়ার আগে %@ সংস্করণে আপডেট করুন। Composer Valet-এর নির্ভরতাগুলিও আপডেট করতে পারে।";
+"phpman.valet.confirm_update.button" = "Valet আপডেট করুন";
+"phpman.valet.confirm_patch.title" = "অস্থায়ী Valet সমর্থনের অনুমতি দেবেন?";
+"phpman.valet.confirm_patch.description" = "Valet %@ আনুষ্ঠানিকভাবে PHP %@ সমর্থন করে না।\n\nPHP Monitor এই ফাইলটি পরিবর্তন করে অস্থায়ী সমর্থন যোগ করতে পারে:\n%@\n\nএতে সামঞ্জস্যের নিশ্চয়তা নেই। ফাইলটি পরিবর্তিত না হয়ে থাকলে, এই PHP সংস্করণগুলি আনইনস্টল হলে PHP Monitor নিজের সংযোজিত এন্ট্রি মুছে দেবে।";
+"phpman.valet.confirm_patch.button" = "পরিবর্তনের অনুমতি দিন";
+"phpman.valet.cleanup_failed" = "PHP সরানো হয়েছে, কিন্তু এর অস্থায়ী Valet সমর্থন স্বয়ংক্রিয়ভাবে সরানো যায়নি।";
 "phpman.steps.installing" = "%@ ইনস্টল করা হচ্ছে";
 "phpman.steps.removing" = "অপসারণ হচ্ছে %@";
 "phpman.steps.reloading" = "PHP সংস্করণগুলো পুনরায় লোড করা হচ্ছে...";

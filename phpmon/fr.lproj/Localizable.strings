@@ -117,7 +117,16 @@ Commit disponible : %@";
 "phpman.version.pinned" = "Ce paquet est épinglé dans Homebrew.";
 "phpman.version.unknown" = "Les informations de compilation ou de mise à jour sont indisponibles.";
 "phpman.check.failed" = "Impossible de rechercher les mises à jour de PHP. Réessayez en actualisant.";
-
+"phpman.valet.checking" = "Vérification des versions PHP prises en charge par Valet...";
+"phpman.valet.updating" = "Mise à jour de Valet avant de modifier PHP...";
+"phpman.valet.patching" = "Ajout des versions PHP demandées à Valet...";
+"phpman.valet.confirm_update.title" = "Mettre à jour Valet ?";
+"phpman.valet.confirm_update.description" = "Valet %@ n’est pas à jour. Passez à %@ avant de continuer. Composer peut aussi mettre à jour ses dépendances.";
+"phpman.valet.confirm_update.button" = "Mettre à jour Valet";
+"phpman.valet.confirm_patch.title" = "Autoriser un support temporaire dans Valet ?";
+"phpman.valet.confirm_patch.description" = "Valet %@ ne prend pas officiellement en charge PHP %@.\n\nPHP Monitor peut ajouter un support temporaire en modifiant ce fichier :\n%@\n\nLa compatibilité n’est pas garantie. PHP Monitor retirera ses entrées à la désinstallation de ces versions PHP, si le fichier reste inchangé.";
+"phpman.valet.confirm_patch.button" = "Autoriser";
+"phpman.valet.cleanup_failed" = "PHP a été supprimé, mais son support temporaire dans Valet n’a pas pu être retiré automatiquement.";
 "phpman.steps.installing" = "Installation de %@";
 "phpman.steps.removing" = "Suppression de %@";
 "phpman.steps.reloading" = "Rechargement des versions PHP...";

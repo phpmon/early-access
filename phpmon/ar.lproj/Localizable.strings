@@ -117,7 +117,16 @@
 "phpman.version.pinned" = "هذه الحزمة مثبّتة على إصدار محدد في Homebrew.";
 "phpman.version.unknown" = "معلومات البناء أو التحديث غير متوفرة.";
 "phpman.check.failed" = "تعذر البحث عن تحديثات PHP. حاول التحديث مجددًا.";
-
+"phpman.valet.checking" = "جارٍ التحقق من دعم PHP في Valet...";
+"phpman.valet.updating" = "جارٍ تحديث Valet قبل تغيير PHP...";
+"phpman.valet.patching" = "جارٍ إضافة إصدارات PHP المطلوبة إلى Valet...";
+"phpman.valet.confirm_update.title" = "تحديث Valet؟";
+"phpman.valet.confirm_update.description" = "إصدار Valet %@ قديم. حدّثه إلى %@ قبل المتابعة. قد يحدّث Composer أيضًا اعتماديات Valet.";
+"phpman.valet.confirm_update.button" = "تحديث Valet";
+"phpman.valet.confirm_patch.title" = "السماح بدعم مؤقت في Valet؟";
+"phpman.valet.confirm_patch.description" = "لا يدعم Valet %@ إصدار PHP %@ رسميًا.\n\nيمكن لـ PHP Monitor إضافة دعم مؤقت بتعديل هذا الملف:\n%@\n\nهذا لا يضمن التوافق. سيزيل PHP Monitor إدخالاته عند إلغاء تثبيت إصدارات PHP هذه، بشرط عدم تغيير الملف.";
+"phpman.valet.confirm_patch.button" = "السماح بالتغيير";
+"phpman.valet.cleanup_failed" = "تمت إزالة PHP، لكن تعذرت إزالة دعم Valet المؤقت تلقائيًا.";
 "phpman.steps.installing" = "تثبيت %@";
 "phpman.steps.removing" = "إزالة %@";
 "phpman.steps.reloading" = "جارٍ إعادة تحميل إصدارات PHP...";
