@@ -196,18 +196,31 @@ class PhpInstallation {
 }
 
 nonisolated enum PhpPrerelease: String, Sendable {
-    case nightly, alpha, beta, rc
+    case nightly
+    case alpha
+    case beta
+    case rc
 
     static func from(_ version: String) -> Self? {
         let version = version.lowercased()
-        if version.contains("dev") { return .nightly }
-        if version.contains("alpha") { return .alpha }
-        if version.contains("beta") { return .beta }
-        if version.contains("rc") { return .rc }
+        if version.contains("dev") {
+            return .nightly
+        }
+        if version.contains("alpha") {
+            return .alpha
+        }
+        if version.contains("beta") {
+            return .beta
+        }
+        if version.contains("rc") {
+            return .rc
+        }
         return nil
     }
 
-    var label: String { "phpman.version.\(rawValue)".localized }
+    var label: String {
+        return "phpman.version.\(rawValue)".localized
+    }
 }
 
 nonisolated enum PhpReleaseStatus: Equatable, Sendable {

@@ -35,16 +35,24 @@ nonisolated struct ValetPhpSupportEdits {
     }
 
     func ownedVersions(at file: String, valetVersion: String, content: String) throws -> Set<String> {
-        guard let record = try read()[file], record.valetVersion == valetVersion else { return [] }
+        guard let record = try read()[file], record.valetVersion == valetVersion else {
+            return []
+        }
         let hash = Self.hash(content)
-        if hash == record.after.hash { return record.after.versions }
-        if hash == record.before.hash { return record.before.versions }
+        if hash == record.after.hash {
+            return record.after.versions
+        }
+        if hash == record.before.hash {
+            return record.before.versions
+        }
         throw ValetPhpSupportError.ownershipChanged
     }
 
     /// Historical entries are only candidates for a new consent prompt, never proof of current ownership.
     func restorationCandidates(at file: String) throws -> Set<String> {
-        guard let record = try read()[file] else { return [] }
+        guard let record = try read()[file] else {
+            return []
+        }
         return record.before.versions.union(record.after.versions)
     }
 
@@ -67,7 +75,9 @@ nonisolated struct ValetPhpSupportEdits {
     }
 
     private func read() throws -> [String: Record] {
-        guard container.filesystem.fileExists(path) else { return [:] }
+        guard container.filesystem.fileExists(path) else {
+            return [:]
+        }
         let contents = try container.filesystem.getStringFromFile(path)
         return try JSONDecoder().decode([String: Record].self, from: Data(contents.utf8))
     }
