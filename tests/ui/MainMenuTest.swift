@@ -113,16 +113,14 @@ final class MainMenuTest: UITestCase {
         assertExists(app.staticTexts["PHP 8.4"])
         assertExists(app.staticTexts["PHP 8.5"])
 
-        // Should also display pre-release version
+        // The tap supplies a nightly build for PHP 8.7.
         assertExists(app.staticTexts["PHP 8.6"])
-        assertExists(app.staticTexts["phpman.version.prerelease".localized.uppercased()])
+        assertExists(app.staticTexts["PHP 8.7"])
+        assertExists(app.staticTexts["phpman.version.nightly".localized.uppercased()])
         assertExists(app.staticTexts["phpman.version.available_for_installation".localized])
 
-        // The pre-release version should be unavailable
         assertExists(app.staticTexts["phpman.version.unavailable".localized])
 
-        // But not PHP 8.7 or 9.0 yet
-        assertNotExists(app.staticTexts["PHP 8.7"])
         assertNotExists(app.staticTexts["PHP 9.0"])
 
         // Also, PHP 8.4 should have an update available

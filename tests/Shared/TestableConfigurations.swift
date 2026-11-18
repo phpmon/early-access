@@ -38,6 +38,12 @@ class TestableConfigurations {
                     }
                     """),
                 "/opt/homebrew/Library/Taps/shivammathur/homebrew-php/Formula/php.rb"       : .fake(.text),
+                "/opt/homebrew/Library/Taps/shivammathur/homebrew-php/Formula/php@8.7.rb": .fake(.text, """
+                    class PhpAT87 < Formula
+                      url "https://github.com/php/php-src/archive/0123456789abcdef0123456789abcdef01234567.tar.gz"
+                      version "8.7.0"
+                    end
+                    """),
                 // "/opt/homebrew/Library/Taps/shivammathur/homebrew-php/Formula/php@8.5.rb"   : .fake(.text),
                 "/opt/homebrew/Library/Taps/shivammathur/homebrew-php/Formula/php@8.4.rb"   : .fake(.text),
                 "/opt/homebrew/Library/Taps/shivammathur/homebrew-php/Formula/php@8.3.rb"   : .fake(.text),
@@ -166,24 +172,10 @@ class TestableConfigurations {
                     : .delayed(0.2, "OK"),
                 "ln -sF ~/.config/valet/valet84.sock ~/.config/valet/valet.sock"
                     : .instant("OK"),
-                "/opt/homebrew/bin/brew update >/dev/null && /opt/homebrew/bin/brew outdated --json --formulae"
-                    : .delayed(2.0,
-                """
-                {
-                "formulae": [
-                    {
-                        "name": "php",
-                        "installed_versions": [
-                            "8.4.5"
-                        ],
-                        "current_version": "8.4.11",
-                        "pinned": false,
-                        "pinned_version": null
-                    }
-                ],
-                "casks": []
-                }
-                """)
+                "/opt/homebrew/bin/brew info --json=v2 --installed"
+                    : .instant(ShellStrings.shared.installedFormulae),
+                "/opt/homebrew/bin/brew update >/dev/null && /opt/homebrew/bin/brew info --json=v2 --installed"
+                    : .delayed(2.0, ShellStrings.shared.installedFormulae)
             ],
             commandOutput: [
                 "/opt/homebrew/bin/php -r echo ini_get('memory_limit');": "512M",
@@ -272,6 +264,13 @@ class TestableConfigurations {
 class ShellStrings {
     static var shared = ShellStrings()
 
+    let installedFormulae = """
+        {"formulae": [{
+            "name": "php", "full_name": "php", "pinned": false, "outdated": true, "revision": 0,
+            "versions": {"stable": "8.4.11"},
+            "urls": {"stable": {"url": "https://www.php.net/distributions/php-8.4.11.tar.xz"}}
+        }]}
+        """
     var brewJson: String = ""
     var brewServicesAsUser: String = ""
     var brewServicesAsRoot: String = ""
