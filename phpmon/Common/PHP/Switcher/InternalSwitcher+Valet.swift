@@ -14,17 +14,20 @@ extension InternalSwitcher {
     @discardableResult
     public func ensureValetConfigurationIsValidForPhpVersion(_ version: String) async -> FixApplied {
         // Early exit if Valet is not installed
-        if !Valet.installed {
+        if !container.valet.installed {
             assertionFailure("Cannot ensure that Valet configuration is valid if Valet is not installed.")
             return false
         }
 
-        let corrections = [
-            await self.disableDefaultPhpFpmPool(version),
-            await self.ensureConfigurationFilesExist(version)
-        ]
-
-        return corrections.contains(true)
+        let repaired = await ensureConfigurationFilesExist(version)
+        if (container.valet.version?.major ?? 0) > 2 {
+            let pool = "\(container.paths.etcPath)/php/\(version)/php-fpm.d/valet-fpm.conf"
+            guard await runBlocking({ [container] in container.filesystem.fileExists(pool) }) else {
+                return repaired
+            }
+        }
+        let disabled = await disableDefaultPhpFpmPool(version)
+        return repaired || disabled
     }
 
     // MARK: - Corrections
@@ -63,13 +66,16 @@ extension InternalSwitcher {
         let filesystem = container.filesystem!
         let destination = "\(container.paths.etcPath)/php/\(version)"
 
+        let package = await runBlocking { [container] in
+            (try? container.paths.valetPackageDirectory()) ?? "~/.composer/vendor/laravel/valet"
+        }
         var repaired = false
         for file in files {
             let path = destination + file.destination
             let exists = await runBlocking { filesystem.fileExists(path) }
             guard !exists, file.applies() else { continue }
 
-            let source = "~/.composer/vendor/laravel/valet" + file.source
+            let source = package + file.source
             let replacements = file.replacements
             do {
                 try await runBlocking {

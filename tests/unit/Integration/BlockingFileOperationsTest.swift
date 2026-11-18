@@ -93,6 +93,26 @@ struct BlockingFileOperationsTest {
         #expect(filesystem.accesses.allSatisfy { !$0.isMainThread && !$0.hasSwiftTask })
     }
 
+    @Test func custom_valet_stubs_are_used_before_disabling_the_default_pool() async throws {
+        let root = "/custom/vendor/laravel/valet"
+        let pool = "/opt/homebrew/etc/php/8.7/php-fpm.d/"
+        let filesystem = RecordingFileSystem(files: [
+            "/opt/homebrew/bin/valet": .fake(.symlink, root + "/valet"),
+            root + "/valet": .fake(.binary),
+            pool + "www.conf": .fake(.text, "original")
+        ])
+        let container = prepare(filesystem)
+        container.valet.installed = true
+        container.valet.version = try VersionNumber.parse("4.12.0")
+        let switcher = InternalSwitcher(container)
+        #expect(await !switcher.ensureValetConfigurationIsValidForPhpVersion("8.7"))
+        #expect(filesystem.fileExists(pool + "www.conf"))
+        try filesystem.writeAtomicallyToFile(root + "/cli/stubs/etc-phpfpm-valet.conf", content: "listen = valet.sock")
+        #expect(await switcher.ensureValetConfigurationIsValidForPhpVersion("8.7"))
+        #expect(try filesystem.getStringFromFile(pool + "valet-fpm.conf") == "listen = valet87.sock")
+        #expect(!filesystem.fileExists(pool + "www.conf"))
+    }
+
     private func prepare(_ filesystem: RecordingFileSystem) -> Container {
         let container = Container()
         container.withFakeSystemContext(architecture: "arm64")

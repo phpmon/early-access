@@ -89,19 +89,32 @@ class ModifyPhpVersionCommand: BrewCommand {
 
         // Prepare Valet while the current working PHP installation is still available.
         let approval = await approveValetChange
-        try await PrepareValetPhpSupportCommand(container, versions: requestedPhpVersions, approval: approval)
-            .execute(shell: shell, onProgress: onProgress)
+        let support = await PrepareValetPhpSupportCommand(container, versions: requestedPhpVersions, approval: approval)
+        try await support.execute(shell: shell, onProgress: onProgress)
 
-        // Make sure the tap is installed.
-        try await self.checkPhpTap(shell: shell, onProgress)
-        try await self.upgradePackages(onProgress)
-        try await self.installPackages(onProgress)
-
-        // Re-check the installed versions
-        await container.phpEnvs.detectPhpVersions()
-
-        // After performing operations, attempt to run repairs if needed
-        try await self.repairBrokenPackages(onProgress)
+        do {
+            try await self.checkPhpTap(shell: shell, onProgress)
+            try await self.upgradePackages(onProgress)
+            try await self.installPackages(onProgress)
+            await container.phpEnvs.detectPhpVersions()
+            try await self.repairBrokenPackages(onProgress)
+        } catch {
+            await restoreActivePhpAfterFailedMigration()
+            let addedVersions = await support.addedVersions
+            if !addedVersions.isEmpty {
+                await container.phpEnvs.detectPhpVersions()
+                do {
+                    try await support.removeOwnedSupport(shell: shell, for: addedVersions)
+                } catch let cleanupError {
+                    let failure = error as? BrewCommandError
+                    throw BrewCommandError(
+                        error: failure?.error ?? error.localizedDescription,
+                        log: (failure?.log ?? [error.localizedDescription]) + [cleanupError.localizedDescription]
+                    )
+                }
+            }
+            throw error
+        }
 
         // Finally, complete all operations
         await self.completedOperations(onProgress)
@@ -135,6 +148,20 @@ class ModifyPhpVersionCommand: BrewCommand {
         for operation in upgradeOperations {
             try await run(shell: container.shell, brewCommand(operation), onProgress)
         }
+    }
+
+    /// Homebrew can already have linked the new main formula when a later operation fails.
+    func restoreActivePhpAfterFailedMigration() async {
+        guard let previousPhpVersion,
+              upgrading.contains(where: { !$0.isPinned && $0.seriesToRestoreAfterUpgrade == previousPhpVersion }),
+              container.phpEnvs.brewPhpAlias != previousPhpVersion,
+              await ActivePhpInstallation.load(container)?.version?.short != previousPhpVersion else { return }
+
+        await container.phpEnvs.detectPhpVersions()
+        guard let previous = container.phpEnvs.cachedPhpInstallations[previousPhpVersion],
+              previous.isHealthy, !previous.isMissingBinary,
+              previous.versionNumber.short == previousPhpVersion else { return }
+        await InternalSwitcher(container).performSwitch(to: previousPhpVersion)
     }
 
     nonisolated private func brewCommand(_ operation: String) -> String {

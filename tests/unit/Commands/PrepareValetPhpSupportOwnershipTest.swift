@@ -12,7 +12,7 @@ extension PrepareValetPhpSupportTest {
     @Test(arguments: [false, true])
     func cancelled_patch_after_valet_update_keeps_installed_versions_in_the_retry(_ adds86: Bool) async throws {
         let upstream = adds86 ? source(versions: ["8.6", "8.5", "8.4"]) : source()
-        let container = makeContainer(updatedSource: upstream, updatedVersion: "4.13.0")
+        let container = makeContainer(updatedSource: upstream, updatedVersion: "4.13.0", updateTarget: "4.13.0")
         try await PrepareValetPhpSupportCommand(container, versions: ["8.7"], approval: { _ in true })
             .execute(shell: container.shell) { _ in }
         try container.filesystem.writeAtomicallyToFile("/opt/homebrew/opt/php@8.7/bin/php", content: "installed")
@@ -43,7 +43,7 @@ extension PrepareValetPhpSupportTest {
     @Test(arguments: [false, true], [false, true])
     func updating_valet_preserves_temporary_support_only_for_still_installed_php(stillInstalled: Bool, upstreamAddsSupport: Bool) async throws {
         let upstream = source(versions: upstreamAddsSupport ? ["8.7", "8.6", "8.5", "8.4"] : ["8.5", "8.4"])
-        let container = makeContainer(updatedSource: upstream, updatedVersion: "4.13.0")
+        let container = makeContainer(updatedSource: upstream, updatedVersion: "4.13.0", updateTarget: "4.13.0")
         try await PrepareValetPhpSupportCommand(container, versions: ["8.7"], approval: { _ in true })
             .execute(shell: container.shell) { _ in }
         if stillInstalled {
@@ -69,6 +69,21 @@ extension PrepareValetPhpSupportTest {
         }
         try await PrepareValetPhpSupportCommand(container, versions: ["8.6", "8.7"]).removeOwnedSupport(shell: container.shell)
         #expect(try container.filesystem.getStringFromFile(sourcePath) == upstream)
+    }
+
+    @Test func failed_partial_install_cleans_up_only_new_entries_without_an_installed_php() async throws {
+        let container = makeContainer()
+        let existing = PrepareValetPhpSupportCommand(container, versions: ["8.6"], approval: { _ in true })
+        try await existing.execute(shell: container.shell) { _ in }
+
+        let batch = PrepareValetPhpSupportCommand(container, versions: ["8.6", "8.7", "8.8"], approval: { _ in true })
+        try await batch.execute(shell: container.shell) { _ in }
+        #expect(batch.addedVersions == ["8.7", "8.8"])
+        try container.filesystem.writeAtomicallyToFile("/opt/homebrew/opt/php@8.7/bin/php", content: "installed")
+        try await batch.removeOwnedSupport(shell: container.shell, for: batch.addedVersions)
+
+        let remaining = try ValetPhpVersionList(container.filesystem.getStringFromFile(sourcePath))
+        #expect(remaining.versions == ["8.4", "8.5", "8.6", "8.7"])
     }
 
     @Test func rolled_back_second_patch_does_not_lose_ownership_of_the_first_patch() async throws {

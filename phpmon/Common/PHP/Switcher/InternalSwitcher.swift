@@ -51,7 +51,7 @@ class InternalSwitcher {
             Log.info("Linking the new version \(version)!")
 
             for formula in versions {
-                if Valet.installed {
+                if container.valet.installed {
                     Log.info("Ensuring that the Valet configuration is valid...")
                     await self.ensureValetConfigurationIsValidForPhpVersion(formula)
                 }
@@ -60,7 +60,7 @@ class InternalSwitcher {
                 await self.linkAndStartPhpVersion(formula, primary: (version == formula))
             }
 
-            if Valet.installed {
+            if container.valet.installed {
                 Log.info("Restarting nginx, just to be sure!")
                 await brew(container, "services restart nginx", sudo: true)
             }
@@ -70,7 +70,7 @@ class InternalSwitcher {
     }
 
     func getVersionsToBeHandled(_ primary: String) -> Set<String> {
-        let isolated = Valet.shared.sites.filter { site in
+        let isolated = container.valet.sites.filter { site in
             site.isolatedPhpVersion != nil
         }.map { site in
             return site.isolatedPhpVersion!.versionNumber.short
@@ -78,7 +78,7 @@ class InternalSwitcher {
 
         var versions: Set<String> = [primary]
 
-        if Valet.enabled(feature: .isolatedSites) {
+        if container.valet.features.contains(.isolatedSites) {
             versions = versions.union(isolated)
         }
 
@@ -86,10 +86,10 @@ class InternalSwitcher {
     }
 
     func unlinkAndStopPhpVersion(_ version: String) async {
-        let formula = (version == PhpEnvironments.brewPhpAlias) ? "php" : "php@\(version)"
+        let formula = (version == container.phpEnvs.brewPhpAlias) ? "php" : "php@\(version)"
         await brew(container, "unlink \(formula)")
 
-        if Valet.installed {
+        if container.valet.installed {
             await brew(container, "services stop \(formula)", sudo: true)
             Log.info("Unlinked and stopped services for \(formula)")
         } else {
@@ -98,7 +98,7 @@ class InternalSwitcher {
     }
 
     func linkAndStartPhpVersion(_ version: String, primary: Bool) async {
-        let formula = (version == PhpEnvironments.brewPhpAlias) ? "php" : "php@\(version)"
+        let formula = (version == container.phpEnvs.brewPhpAlias) ? "php" : "php@\(version)"
 
         if primary {
             Log.info("\(formula) is the primary formula, linking...")
@@ -107,10 +107,10 @@ class InternalSwitcher {
             Log.info("\(formula) is an isolated PHP version, not linking!")
         }
 
-        if Valet.installed {
+        if container.valet.installed {
             await brew(container, "services start \(formula)", sudo: true)
 
-            if Valet.enabled(feature: .isolatedSites) && primary {
+            if container.valet.features.contains(.isolatedSites) && primary {
                 let socketVersion = version.replacing(".", with: "")
                 await container.shell.pipe("ln -sF ~/.config/valet/valet\(socketVersion).sock ~/.config/valet/valet.sock")
                 Log.info("Symlinked new socket version (valet\(socketVersion).sock → valet.sock).")

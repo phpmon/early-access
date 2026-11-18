@@ -119,6 +119,7 @@ struct PrepareValetPhpSupportTest {
         #expect(list.canSupport("8.7", temporaryVersions: ["8.7"]))
         #expect(list.canSupport("8.6", temporaryVersions: ["8.7"]))
         #expect(!list.canSupport("8.6"))
+        #expect(!list.canSupport("8x8", temporaryVersions: ["8.7"]))
         #expect(!list.canSupport("7.0", temporaryVersions: ["8.7"]))
         #expect(!list.canSupport("8.8'; bad() //", temporaryVersions: ["8.7"]))
         #expect(!list.canSupport("8.8", temporaryVersions: list.versions))
@@ -161,6 +162,7 @@ struct PrepareValetPhpSupportTest {
         content: String? = nil,
         updatedSource: String? = nil,
         updatedVersion: String = "4.12.0",
+        updateTarget: String? = nil,
         updateExitCode: Int32 = 0,
         lintExitCode: Int32 = 0,
         networkStatus: Int = 200,
@@ -179,7 +181,7 @@ struct PrepareValetPhpSupportTest {
                 "'/opt/homebrew/bin/composer' global config vendor-dir --absolute": .instant("\(root)/../.."),
                 versionCommand: .init(items: [.instant("Laravel Valet \(current)")],
                     transactions: changedDuringVersionCheck.map { [.write($0, to: sourcePath)] } ?? []),
-                "'/opt/homebrew/bin/composer' global update laravel/valet --with-all-dependencies --no-interaction":
+                "'/opt/homebrew/bin/composer' global update laravel/valet:\(updateTarget ?? latest) --with-all-dependencies --no-interaction":
                     .init(items: [.instant("Composer update")], transactions: updateExitCode == 0 ? updateTransactions : [], exitCode: updateExitCode),
                 "'/opt/homebrew/bin/php' -l '\(sourcePath)'": .init(
                     items: [.instant(lintExitCode == 0 ? "No syntax errors detected" : "Parse error")],

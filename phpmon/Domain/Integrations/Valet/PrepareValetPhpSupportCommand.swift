@@ -10,6 +10,7 @@ import Foundation
 class PrepareValetPhpSupportCommand: BrewCommand {
     let container: Container
     let versions: Set<String>
+    private(set) var addedVersions: Set<String> = []
     let approval: ValetPhpSupportApproval
 
     init(_ container: Container, versions: Set<String>, approval: @escaping ValetPhpSupportApproval = { _ in false }) {
@@ -35,6 +36,7 @@ class PrepareValetPhpSupportCommand: BrewCommand {
     }
 
     private func prepare(shell: ShellProtocol, _ onProgress: @escaping @Sendable (BrewCommandProgress) -> Void) async throws {
+        addedVersions = []
         guard !versions.isEmpty, container.valet.installed else { return }
         onProgress(.create(value: 0.05, title: getCommandTitle(), description: "phpman.valet.checking".localized))
 
@@ -89,6 +91,7 @@ class PrepareValetPhpSupportCommand: BrewCommand {
             path: file, shell: shell, valetVersion: valetVersion,
             before: (original, owned), after: (updated, owned.union(missing))
         )
+        addedVersions = missing
     }
 
     private func ownedVersions(in source: (path: String, content: String), valetVersion: String) async throws -> Set<String> {
@@ -160,25 +163,24 @@ class PrepareValetPhpSupportCommand: BrewCommand {
             throw ValetPhpSupportError.cancelled
         }
         onProgress(.create(value: 0.05, title: getCommandTitle(), description: "phpman.valet.updating".localized))
-        try await run(shell: shell, CommandCatalog.ValetSupport.update(composer: composer), onProgress)
+        try await run(shell: shell, CommandCatalog.ValetSupport.update(composer: composer, version: latest.text), onProgress)
         let installed = try await readVersion(shell: shell)
-        guard !installed.isOlderThan(latest), installed.major == latest.major else {
+        guard installed.text == latest.text else {
             throw ValetPhpSupportError.updateIncomplete
         }
         return installed
     }
 
     /// Undo only recorded additions after the corresponding PHP installations are gone.
-    func removeOwnedSupport(shell: ShellProtocol) async throws {
-        let absent = versions.subtracting(container.phpEnvs.cachedPhpInstallations.keys)
+    func removeOwnedSupport(shell: ShellProtocol, for candidates: Set<String>? = nil) async throws {
+        let possiblyAbsent = (candidates ?? versions).subtracting(container.phpEnvs.cachedPhpInstallations.keys)
+        guard !possiblyAbsent.isEmpty, container.valet.installed else { return }
         let edits = ValetPhpSupportEdits(container: container)
-        let tracked = try await runBlocking { try edits.hasEdits(for: absent) }
-        guard !absent.isEmpty, tracked, container.valet.installed else { return }
         let container = self.container
-        let stillInstalled = await runBlocking {
-            absent.contains { container.filesystem.fileExists("\(container.paths.optPath)/php@\($0)/bin/php") }
+        let absent = await runBlocking {
+            possiblyAbsent.filter { !container.filesystem.fileExists("\(container.paths.optPath)/php@\($0)/bin/php") }
         }
-        guard !stillInstalled else { return }
+        guard !absent.isEmpty, try await runBlocking({ try edits.hasEdits(for: absent) }) else { return }
         await runBlocking { container.paths.detectBinaryPaths() }
         guard let composer = container.paths.composer else {
             throw ValetPhpSupportError.unrecognizedInstallation
@@ -216,17 +218,7 @@ class PrepareValetPhpSupportCommand: BrewCommand {
         let container = self.container
         return try await runBlocking {
             let filesystem = container.filesystem!
-            var executable = container.paths.valet
-            var visited: Set<String> = []
-            while filesystem.isSymlink(executable) {
-                guard visited.count < 32, visited.insert(executable).inserted else {
-                    throw ValetPhpSupportError.unrecognizedInstallation
-                }
-                let target = try filesystem.getDestinationOfSymlink(executable)
-                executable = target.hasPrefix("/") ? target
-                    : URL(fileURLWithPath: executable).deletingLastPathComponent().appendingPathComponent(target).standardizedFileURL.path
-            }
-            guard executable == "\(root)/valet" else {
+            guard try container.paths.valetPackageDirectory() == root else {
                 throw ValetPhpSupportError.unrecognizedInstallation
             }
             let path = "\(root)/cli/Valet/Brew.php"

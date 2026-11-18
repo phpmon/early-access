@@ -117,14 +117,20 @@ extension PhpVersionManagerView {
                     }
                 }
             }
+        } catch let error as ValetSupportCleanupError {
+            self.setBusyStatus(false)
+            self.presentErrorAlert(
+                title: "phpman.valet.cleanup_failed".localized,
+                description: error.detail,
+                button: "generic.ok".localized
+            )
         } catch {
             self.setBusyStatus(false)
 
             self.presentErrorAlert(
                 title: "phpman.failures.uninstall.title".localized,
                 description: "phpman.failures.uninstall.desc".localized(
-                    (error as? BrewCommandError)?.log.suffix(2).joined(separator: "\n")
-                        ?? "brew uninstall \(formula.name) --force"
+                    "brew uninstall \(formula.name) --force"
                 ),
                 button: "generic.ok".localized
             )

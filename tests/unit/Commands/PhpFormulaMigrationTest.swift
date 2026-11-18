@@ -45,6 +45,37 @@ struct PhpFormulaMigrationTest {
         #expect(fixture.container.filesystem.fileExists("/opt/homebrew/opt/php@8.5/bin/php") == (failedStep != 1))
     }
 
+    @Test func a_later_failure_relinks_the_previous_active_series() async throws {
+        let fixture = makeFixture(failedStep: 2)
+        let container = fixture.container
+        let filesystem = try #require(container.filesystem as? TestableFileSystem)
+        let shell = try #require(container.shell as? TestableShell)
+        let commands = try #require(container.command as? TestableCommand)
+        let bin = "/opt/homebrew/bin"
+        let opt = "/opt/homebrew/opt"
+        // Simulate the CLI link Homebrew installs when upgrading the active main formula.
+        filesystem.createSymlink("\(bin)/php", destination: "\(opt)/php/bin/php")
+        commands.updateOutputs(["\(bin)/php-config --version": "8.6.0"])
+        for version in ["8.5", "8.6"] {
+            let keg = "\(opt)/php@\(version)/bin"
+            try filesystem.writeFile("\(keg)/php-config", content: "", overwrite: true)
+            try filesystem.writeFile("\(keg)/php", content: "", overwrite: true)
+            commands.updateOutputs(["\(keg)/php-config --version": "\(version).0", "\(keg)/php -v": "PHP \(version).0 (cli)"])
+            shell.expectations["\(keg)/php --ini | grep -E -o '(/[^ ]+\\.ini)'"] = .instant("")
+        }
+        shell.expectations["\(bin)/brew unlink php"] = .instant("")
+        shell.expectations["\(bin)/brew unlink php@8.5"] = .instant("")
+        shell.expectations["\(bin)/brew link php@8.5 --overwrite --force"] = BatchFakeShellOutput(
+            items: [], transactions: [.symlink("\(bin)/php", to: "\(opt)/php@8.5/bin/php")]
+        )
+
+        await #expect(throws: BrewCommandError.self) {
+            try await fixture.command.upgradePackages { _ in }
+        }
+        await fixture.command.restoreActivePhpAfterFailedMigration()
+        #expect(try filesystem.getDestinationOfSymlink("\(bin)/php") == "\(opt)/php@8.5/bin/php")
+    }
+
     @Test func pinning_the_main_formula_skips_its_migration_but_keeps_other_updates() async throws {
         let fixture = makeFixture(pinned: true)
         try await fixture.command.upgradePackages { _ in }
@@ -76,6 +107,7 @@ struct PhpFormulaMigrationTest {
                 transactions.append(.remove("/opt/homebrew/opt/php@\(previous)/bin/php"))
             } else if index == 1 {
                 transactions.append(.write("restored", to: "/opt/homebrew/opt/php@\(previous)/bin/php"))
+                transactions.append(.write("restored", to: "/opt/homebrew/opt/php@\(previous)/bin/php-config"))
             }
             let command = "export HOMEBREW_DOWNLOAD_CONCURRENCY=auto; export HOMEBREW_NO_INSTALL_UPGRADE=true; "
                 + "export HOMEBREW_NO_INSTALL_CLEANUP=true; export HOMEBREW_NO_ASK=true; /opt/homebrew/bin/brew \(operation)"

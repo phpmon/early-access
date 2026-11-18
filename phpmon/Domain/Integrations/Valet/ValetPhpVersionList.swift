@@ -62,7 +62,8 @@ nonisolated struct ValetPhpVersionList {
             throw ValetPhpSupportError.unrecognizedSource
         }
         for version in missing {
-            guard let parsed = VersionNumber.make(from: version), parsed.patch == nil,
+            guard version.range(of: #"^[0-9]+\.[0-9]+\z"#, options: .regularExpression) != nil,
+                  let parsed = VersionNumber.make(from: version),
                   parsed.isNewerThan(newest) else {
                 throw ValetPhpSupportError.unsupportedVersion
             }

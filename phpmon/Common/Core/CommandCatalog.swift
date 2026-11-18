@@ -12,8 +12,8 @@ enum CommandCatalog {
             return "\(quote(composer)) global config vendor-dir --absolute"
         }
 
-        static func update(composer: String) -> String {
-            return "\(quote(composer)) global update laravel/valet --with-all-dependencies --no-interaction"
+        static func update(composer: String, version: String) -> String {
+            return "\(quote(composer)) global update laravel/valet:\(version) --with-all-dependencies --no-interaction"
         }
 
         static func version(valet: String) -> String {

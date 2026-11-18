@@ -59,6 +59,24 @@ public nonisolated final class Paths: Sendable {
         return "\(binPath)/valet"
     }
 
+    func valetPackageDirectory() throws -> String {
+        let filesystem = container.filesystem!
+        var executable = valet
+        var visited: Set<String> = []
+        while filesystem.isSymlink(executable) {
+            guard visited.count < 32, visited.insert(executable).inserted else {
+                throw ValetPhpSupportError.unrecognizedInstallation
+            }
+            let target = try filesystem.getDestinationOfSymlink(executable)
+            executable = target.hasPrefix("/") ? target
+                : URL(fileURLWithPath: executable).deletingLastPathComponent().appendingPathComponent(target).standardizedFileURL.path
+        }
+        guard executable.hasSuffix("/laravel/valet/valet") else {
+            throw ValetPhpSupportError.unrecognizedInstallation
+        }
+        return URL(fileURLWithPath: executable).deletingLastPathComponent().path
+    }
+
     public var brew: String {
         return "\(binPath)/brew"
     }

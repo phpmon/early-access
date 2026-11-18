@@ -9,6 +9,10 @@
 import Foundation
 import os
 
+nonisolated struct ValetSupportCleanupError: Error {
+    let detail: String
+}
+
 class RemovePhpVersionCommand: BrewCommand {
 
     // MARK: - Container
@@ -100,10 +104,7 @@ class RemovePhpVersionCommand: BrewCommand {
             do {
                 try await PrepareValetPhpSupportCommand(container, versions: [version]).removeOwnedSupport(shell: shell)
             } catch {
-                throw BrewCommandError(
-                    error: "PHP was removed, but its temporary Valet support could not be cleaned up.",
-                    log: ["phpman.valet.cleanup_failed".localized, error.localizedDescription]
-                )
+                throw ValetSupportCleanupError(detail: (error as? BrewCommandError)?.log.joined(separator: "\n") ?? error.localizedDescription)
             }
 
             await MainMenu.shared.refreshActiveInstallation()
