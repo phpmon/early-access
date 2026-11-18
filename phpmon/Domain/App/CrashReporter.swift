@@ -22,6 +22,12 @@ class CrashReporter {
      it does not automatically send information. I have my own API for my crash report ingest system.
      */
     static func initialize() {
+        #if DEBUG
+        if ProcessInfo.processInfo.environment["PHPMON_TEST_CONFIGURATION"] != nil {
+            return
+        }
+        #endif
+
         if CrashReporter.isDebuggerAttached() {
             Log.err("[CrashReporter] The debugger is attached, won't start crash reporting.")
             return
