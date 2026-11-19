@@ -8,14 +8,6 @@
 
 enum CommandCatalog {
     enum ValetSupport {
-        static func vendorDirectory(composer: String) -> String {
-            return "\(quote(composer)) global config vendor-dir --absolute"
-        }
-
-        static func update(composer: String, version: String) -> String {
-            return "\(quote(composer)) global update laravel/valet:\(version) --with-all-dependencies --no-interaction"
-        }
-
         static func version(valet: String) -> String {
             return "\(quote(valet)) --version"
         }

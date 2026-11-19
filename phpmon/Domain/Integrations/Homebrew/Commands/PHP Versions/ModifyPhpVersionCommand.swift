@@ -8,6 +8,18 @@
 
 import Foundation
 
+/// Valet could not be prepared, so Homebrew did not run.
+nonisolated struct ValetSupportPreparationError: Error {
+    let versions: [String]
+    let detail: String
+
+    init(versions: Set<String>, error: BrewCommandError) {
+        self.versions = versions.sorted { $0.versionCompare($1) == .orderedDescending }
+        let output = error.log.suffix(2).filter { !$0.isEmpty && $0 != error.error }
+        self.detail = ([error.error] + output).joined(separator: "\n\n")
+    }
+}
+
 class ModifyPhpVersionCommand: BrewCommand {
 
     // MARK: - Container
@@ -19,6 +31,7 @@ class ModifyPhpVersionCommand: BrewCommand {
     let title: String
     let installing: [BrewPhpFormula]
     let upgrading: [BrewPhpFormula]
+    /// The PHP series that Valet must list before Homebrew changes anything.
     let requestedPhpVersions: Set<String>
     var approveValetChange: ValetPhpSupportApproval = { _ in false }
 
@@ -69,13 +82,26 @@ class ModifyPhpVersionCommand: BrewCommand {
             }
         }
         // Installing an older CLI-only PHP must not expand what this Valet major supports.
-        // Keep newer series so preparation can require a Valet update before PHP changes.
+        // Keep newer series so Valet can be prepared before PHP changes.
         if let major = container.valet.version?.major,
            let supported = Constants.ValetSupportedPhpVersionMatrix[major],
            let minimum = supported.compactMap({ VersionNumber.make(from: $0) }).min(by: { $0.isOlderThan($1) }) {
             requested = Set(requested.filter { VersionNumber.make(from: $0)?.isOlderThan(minimum) == false })
         }
-        self.requestedPhpVersions = requested
+
+        // Valet accepts the series that the `php` formula holds after this operation through its
+        // `php` entry, so it needs no explicit entry to switch. Isolating a site asks for that entry
+        // when it is needed. Use the same cap as version detection, so the switcher accepts it.
+        var linkedSeries: Set<String> = []
+        for formula in installing + upgrading.filter({ !$0.isPinned }) where formula.name.split(separator: "/").last == "php" {
+            if case let .upgrade(version) = formula.update, let target = try? VersionNumber.parse(version) {
+                linkedSeries.insert(target.short)
+            } else if formula.installedVersion == nil, let version = formula.shortVersion {
+                linkedSeries.insert(version)
+            }
+        }
+        let known = container.valet.version.flatMap { Constants.ValetSupportedPhpVersionMatrix[$0.major] } ?? []
+        self.requestedPhpVersions = requested.subtracting(linkedSeries.intersection(known))
     }
 
     nonisolated func execute(shell: ShellProtocol, onProgress: @escaping @Sendable (BrewCommandProgress) -> Void) async throws {
@@ -90,7 +116,13 @@ class ModifyPhpVersionCommand: BrewCommand {
         // Prepare Valet while the current working PHP installation is still available.
         let approval = await approveValetChange
         let support = await PrepareValetPhpSupportCommand(container, versions: requestedPhpVersions, approval: approval)
-        try await support.execute(shell: shell, onProgress: onProgress)
+        do {
+            try await support.execute(shell: shell, onProgress: onProgress)
+        } catch let error as BrewCommandError {
+            // Homebrew has not run yet, so report this as a Valet problem rather than a failed installation.
+            let unlisted = await support.unlistedVersions
+            throw ValetSupportPreparationError(versions: unlisted.isEmpty ? requestedPhpVersions : unlisted, error: error)
+        }
 
         do {
             try await self.checkPhpTap(shell: shell, onProgress)

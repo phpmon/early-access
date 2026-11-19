@@ -296,8 +296,12 @@ struct PhpVersionManagerView: View {
                 updateDescription(update, installedVersion: formula.installedVersion!)
                     .font(.system(size: 11))
                     .foregroundColor(.gray)
-            } else if formula.isInstalled && formula.installedVersion != nil {
-                Text("phpman.version.installed".localized(formula.installedVersion!))
+            } else if let date = formula.formattedBuildDate {
+                Text("phpman.version.installed_build".localized(date))
+                    .font(.system(size: 11))
+                    .foregroundColor(.gray)
+            } else if let version = formula.installedVersion {
+                Text("phpman.version.installed".localized(version))
                     .font(.system(size: 11))
                     .foregroundColor(.gray)
             } else if !formula.hasFormulaFile {
@@ -308,14 +312,9 @@ struct PhpVersionManagerView: View {
                     .foregroundColor(.gray)
             }
 
-            if case .prerelease = formula.releaseStatus, let date = formula.buildDate {
+            if case .prerelease = formula.releaseStatus, let date = formula.buildDate,
+               formula.update != nil || formula.isPinned || formula.hasUpgradedFormulaAlias {
                 Text("phpman.version.built".localized(date))
-                    .font(.system(size: 11))
-                    .foregroundColor(.gray)
-            }
-
-            if formula.releaseStatus == .unknown || (formula.isInstalled && formula.updateCheck == .unknown) {
-                Text("phpman.version.unknown".localizedForSwiftUI)
                     .font(.system(size: 11))
                     .foregroundColor(.gray)
             }

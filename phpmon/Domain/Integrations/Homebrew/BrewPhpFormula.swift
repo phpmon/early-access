@@ -41,6 +41,19 @@ struct BrewPhpFormula: Equatable, Sendable {
         return installedVersion != nil
     }
 
+    var formattedBuildDate: String? {
+        guard case .prerelease = releaseStatus, let buildDate else {
+            return nil
+        }
+        let parser = DateFormatter()
+        parser.locale = Locale(identifier: "en_US_POSIX")
+        parser.dateFormat = "MMM d yyyy HH:mm:ss"
+        if let date = parser.date(from: buildDate) {
+            return date.formatted(date: .abbreviated, time: .omitted)
+        }
+        return buildDate
+    }
+
     init(
         _ container: Container,
         name: String,

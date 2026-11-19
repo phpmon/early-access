@@ -32,7 +32,7 @@ extension PhpVersionManagerView {
         }
 
         command.approveValetChange = { change in
-            await self.confirmValetChange(change)
+            await change.confirm(onWindow: WindowManager.window(for: PhpVersionManagerWC.self))
         }
         do {
             self.setBusyStatus(true)
@@ -57,6 +57,13 @@ extension PhpVersionManagerView {
             }
         } catch ValetPhpSupportError.cancelled {
             self.setBusyStatus(false)
+        } catch let error as ValetSupportPreparationError {
+            self.setBusyStatus(false)
+            self.presentErrorAlert(
+                title: "phpman.valet.failed.title".localized(error.versions.joined(separator: ", ")),
+                description: error.detail,
+                button: "generic.ok".localized
+            )
         } catch let error {
             let error = error as! BrewCommandError
             let messages = error.log.suffix(2).joined(separator: "\n")
@@ -191,31 +198,6 @@ extension PhpVersionManagerView {
                 }
             )
         }
-    }
-
-    private func confirmValetChange(_ change: ValetPhpSupportChange) async -> Bool {
-        guard let window = WindowManager.window(for: PhpVersionManagerWC.self) else { return false }
-        let title: String
-        let description: String
-        let button: String
-        switch change {
-        case let .update(current, latest):
-            title = "phpman.valet.confirm_update.title".localized
-            description = "phpman.valet.confirm_update.description".localized(current, latest)
-            button = "phpman.valet.confirm_update.button".localized
-        case let .addVersions(versions, valetVersion, file):
-            title = "phpman.valet.confirm_patch.title".localized
-            description = "phpman.valet.confirm_patch.description".localized(valetVersion, versions.joined(separator: ", "), file)
-            button = "phpman.valet.confirm_patch.button".localized
-        }
-        return await Alert.confirm(
-            onWindow: window,
-            messageText: title,
-            informativeText: description,
-            buttonTitle: button,
-            secondButtonTitle: "generic.cancel".localized,
-            style: .warning
-        )
     }
 
     /**

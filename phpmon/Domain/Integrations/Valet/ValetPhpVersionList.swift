@@ -95,8 +95,6 @@ nonisolated enum ValetPhpSupportError: Error, LocalizedError {
     case unrecognizedInstallation
     case unrecognizedSource
     case unsupportedVersion
-    case manualMajorUpgradeRequired
-    case updateIncomplete
     case sourceChanged
     case sourceNotWritable
     case cancelled
@@ -105,23 +103,26 @@ nonisolated enum ValetPhpSupportError: Error, LocalizedError {
     var errorDescription: String? {
         switch self {
         case .unrecognizedInstallation:
-            return "Could not verify that Composer and PHP Monitor use the same Valet installation."
+            return "phpman.valet.errors.unknown_installation".localized
         case .unrecognizedSource:
-            return "Valet's PHP support list has an unfamiliar format. No changes were made to the list."
+            return "phpman.valet.errors.unrecognized_source".localized
         case .unsupportedVersion:
-            return "PHP Monitor can only extend Valet's support list with newer PHP series."
-        case .manualMajorUpgradeRequired:
-            return "Update Valet to the latest major version manually before using this PHP version."
-        case .updateIncomplete:
-            return "Valet did not reach the latest stable version. Check Composer's version constraints."
+            return "phpman.valet.errors.unsupported_version".localized
         case .sourceChanged:
-            return "Valet changed during the operation. Stop other Composer operations and try again."
+            return "phpman.valet.errors.source_changed".localized
         case .sourceNotWritable:
-            return "Valet's PHP support list is not writable. No changes were made to the list."
+            return "phpman.valet.errors.source_not_writable".localized
         case .cancelled:
-            return "The Valet change was cancelled."
+            return "phpman.valet.errors.cancelled".localized
         case .ownershipChanged:
-            return "Valet's file changed since PHP Monitor edited it. Its support entries were left untouched."
+            return "phpman.valet.errors.ownership_changed".localized
         }
+    }
+
+    /// Explain an unrecognized list with the versions and file involved, and what the user can do.
+    static func unrecognizedSourceMessage(versions: [String], file: String?) -> String {
+        let names = versions.map { "PHP \($0)" }.joined(separator: ", ")
+        let entries = versions.map { "'php@\($0)'" }.joined(separator: ", ")
+        return "phpman.valet.errors.unrecognized_source_detail".localized(names, file ?? "cli/Valet/Brew.php", entries)
     }
 }

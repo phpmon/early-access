@@ -101,16 +101,16 @@ class RemovePhpVersionCommand: BrewCommand {
 
             await container.phpEnvs.detectPhpVersions()
 
-            do {
-                try await PrepareValetPhpSupportCommand(container, versions: [version]).removeOwnedSupport(shell: shell)
-            } catch {
-                throw ValetSupportCleanupError(detail: (error as? BrewCommandError)?.log.joined(separator: "\n") ?? error.localizedDescription)
-            }
-
             await MainMenu.shared.refreshActiveInstallation()
 
             if let version = previousPhpVersion {
                 await MainMenu.shared.switchToPhpVersionAndWait(version, silently: true)
+            }
+
+            do {
+                try await PrepareValetPhpSupportCommand(container, versions: [version]).removeOwnedSupport(shell: shell)
+            } catch {
+                throw ValetSupportCleanupError(detail: (error as? BrewCommandError)?.log.joined(separator: "\n") ?? error.localizedDescription)
             }
 
             onProgress(.create(value: 1, title: getCommandTitle(), description: "phpman.steps.success".localized))

@@ -242,14 +242,6 @@ class PhpEnvironments {
         }
         var installedVersions = await extractPhpVersions(from: files)
 
-        let supportedByValet: Set<String> = {
-            guard let version = container.valet.version else {
-                return Constants.DetectedPhpVersions
-            }
-
-            return Constants.ValetSupportedPhpVersionMatrix[version.major] ?? []
-        }()
-
         // Make sure the aliased version is detected
         // The user may have `php` installed, but not e.g. `php@8.0`
         // We should also detect that as a version that is installed
@@ -265,12 +257,28 @@ class PhpEnvironments {
             }
         }
 
-        let supportedVersions = container.valet.installed ? installedVersions.intersection(supportedByValet) : installedVersions
+        var supportedVersions = installedVersions
+        if container.valet.installed {
+            let localVersions = await runBlocking { [container] in
+                try? ValetPhpVersionList(container.filesystem.getStringFromFile(
+                    container.paths.valetPackageDirectory() + "/cli/Valet/Brew.php"
+                )).versions
+            }
+            let known = container.valet.version.map { Constants.ValetSupportedPhpVersionMatrix[$0.major] ?? [] }
+            var valetVersions = localVersions ?? known ?? Constants.DetectedPhpVersions
+            // Valet's `php` entry accepts whichever series Homebrew currently installs as `php`,
+            // so a new series works before Valet lists it. The built-in mapping still caps what
+            // this Valet major can run. Isolation needs an explicit entry, see `isolateSite`.
+            if localVersions != nil, let alias = homebrewPackage?.version, known?.contains(alias) == true {
+                valetVersions.insert(alias)
+            }
+            supportedVersions.formIntersection(valetVersions)
+        }
 
         let availableVersions = Array(supportedVersions)
             .sorted(by: { $0.versionCompare($1) == .orderedDescending })
 
-        let incompatibleVersions = Array(installedVersions.subtracting(supportedByValet))
+        let incompatibleVersions = Array(installedVersions.subtracting(supportedVersions))
             .sorted(by: { $0.versionCompare($1) == .orderedDescending })
 
         Log.info("The PHP versions that were detected are: \(availableVersions)")

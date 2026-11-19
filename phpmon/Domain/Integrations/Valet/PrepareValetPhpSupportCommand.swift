@@ -11,6 +11,8 @@ class PrepareValetPhpSupportCommand: BrewCommand {
     let container: Container
     let versions: Set<String>
     private(set) var addedVersions: Set<String> = []
+    /// The requested versions that Valet does not list, for error messages.
+    private(set) var unlistedVersions: Set<String> = []
     let approval: ValetPhpSupportApproval
 
     init(_ container: Container, versions: Set<String>, approval: @escaping ValetPhpSupportApproval = { _ in false }) {
@@ -30,6 +32,16 @@ class PrepareValetPhpSupportCommand: BrewCommand {
             throw ValetPhpSupportError.cancelled
         } catch let error as BrewCommandError {
             throw error
+        } catch ValetPhpSupportError.unrecognizedSource {
+            // The parser knows neither the file nor the versions, so name them here.
+            let container = self.container
+            let file = await runBlocking { try? container.paths.valetPackageDirectory() + "/cli/Valet/Brew.php" }
+            let unlisted = await unlistedVersions
+            let message = ValetPhpSupportError.unrecognizedSourceMessage(
+                versions: (unlisted.isEmpty ? versions : unlisted).sorted { $0.versionCompare($1) == .orderedDescending },
+                file: file
+            )
+            throw BrewCommandError(error: message, log: [message])
         } catch {
             throw BrewCommandError(error: error.localizedDescription, log: [error.localizedDescription])
         }
@@ -37,61 +49,91 @@ class PrepareValetPhpSupportCommand: BrewCommand {
 
     private func prepare(shell: ShellProtocol, _ onProgress: @escaping @Sendable (BrewCommandProgress) -> Void) async throws {
         addedVersions = []
+        unlistedVersions = []
         guard !versions.isEmpty, container.valet.installed else { return }
         onProgress(.create(value: 0.05, title: getCommandTitle(), description: "phpman.valet.checking".localized))
 
-        let container = self.container
-        await runBlocking { container.paths.detectBinaryPaths() }
-        guard let composer = container.paths.composer else {
-            throw ValetPhpSupportError.unrecognizedInstallation
+        guard let installedCandidates = try await candidatesRequiringPreparation(shell: shell) else {
+            Log.info("Continuing without editing Valet's PHP support list.")
+            return
         }
-
-        var source = try await readSource(composer: composer, shell: shell)
-        var list = try ValetPhpVersionList(source.content)
-        var current = try await readVersion(shell: shell)
-        var owned = try await ownedVersions(in: source, valetVersion: current.text)
+        let source = try await readSource()
+        let list = try ValetPhpVersionList(source.content)
+        let current = try await readVersion(shell: shell)
+        let owned = try await ownedVersions(in: source, valetVersion: current.text)
+        unlistedVersions = versions.subtracting(list.versions)
         _ = try list.missingVersions(from: versions, temporaryVersions: owned)
-        let installedVersions = Set(container.phpEnvs.cachedPhpInstallations.keys)
-        let sourcePath = source.path
-        let candidates = try await runBlocking {
-            try ValetPhpSupportEdits(container: container).restorationCandidates(at: sourcePath)
-        }
-        // A cancelled edit after Composer updates Valet must not forget installed temporary support.
-        // Ignore historical series that this Valet release no longer permits us to add.
-        let temporaryVersions = candidates.filter { version in
+        // Updating Valet replaces the file, including temporary entries for PHP versions that are still
+        // installed. Offer those again, but skip series that this Valet release no longer permits us to add.
+        let installedTemporaryVersions = installedCandidates.filter { version in
             list.canSupport(version, temporaryVersions: owned)
-        }
-        let installedTemporaryVersions = await runBlocking {
-            temporaryVersions.filter {
-                installedVersions.contains($0)
-                    || container.filesystem.fileExists("\(container.paths.optPath)/php@\($0)/bin/php")
-            }
         }
         let requiredVersions = versions.union(installedTemporaryVersions)
         guard !requiredVersions.isSubset(of: list.versions) else { return }
 
-        if let installed = try await updateIfNeeded(current: current, composer: composer, shell: shell, onProgress) {
-            // Composer may have replaced the package, moved it, or added support itself.
-            source = try await readSource(composer: composer, shell: shell)
-            list = try ValetPhpVersionList(source.content)
-            current = installed
-            owned = try await ownedVersions(in: source, valetVersion: current.text)
-        }
-
         let (updated, missing) = try list.adding(requiredVersions, temporaryVersions: owned)
         guard !missing.isEmpty else { return }
-        let valetVersion = current.text
-        guard await approval(.addVersions(missing.sorted(), valetVersion: valetVersion, file: source.path)) else {
+        // Only mention a newer Valet that the launch-time update check already found.
+        let newerValet = container.valet.latestVersion.flatMap { current.isOlderThan($0) ? $0.text : nil }
+        let change = ValetPhpSupportChange(
+            versions: missing.sorted { $0.versionCompare($1) == .orderedDescending },
+            valetVersion: current.text, file: source.path, newerValetVersion: newerValet
+        )
+        guard await approval(change) else {
             throw ValetPhpSupportError.cancelled
         }
-        let file = source.path
-        let original = source.content
         onProgress(.create(value: 0.05, title: getCommandTitle(), description: "phpman.valet.patching".localized))
         try await replaceSupportList(
-            path: file, shell: shell, valetVersion: valetVersion,
-            before: (original, owned), after: (updated, owned.union(missing))
+            path: source.path, shell: shell, valetVersion: current.text,
+            before: (source.content, owned), after: (updated, owned.union(missing))
         )
         addedVersions = missing
+    }
+
+    /// Return nil when Homebrew can proceed without preparing Valet.
+    /// Otherwise, return the installed versions that have recorded temporary support.
+    private func candidatesRequiringPreparation(shell: ShellProtocol) async throws -> Set<String>? {
+        let container = self.container
+        let source: (path: String, content: String)
+        let list: ValetPhpVersionList
+        do {
+            source = try await readSource()
+            list = try ValetPhpVersionList(source.content)
+        } catch {
+            var major = container.valet.version?.major
+            if major == nil {
+                major = try? await readVersion(shell: shell).major
+            }
+            let supported = major.flatMap { Constants.ValetPhpVersionsWithoutEdits[$0] }
+            unlistedVersions = versions.subtracting(supported ?? [])
+            guard let major, let supported, versions.isSubset(of: supported) else { throw error }
+            Log.warn("Could not read Valet's PHP list. Continuing with known support for Valet \(major).")
+            return nil
+        }
+
+        let alreadySupported = versions.isSubset(of: list.versions)
+        if alreadySupported, let major = container.valet.version?.major,
+           let supported = Constants.ValetPhpVersionsWithoutEdits[major], versions.isSubset(of: supported) {
+            return nil
+        }
+        let installedVersions = Set(container.phpEnvs.cachedPhpInstallations.keys)
+        let sourcePath = source.path
+        let edits = ValetPhpSupportEdits(container: container)
+        let candidates: Set<String>
+        do {
+            candidates = try await runBlocking { try edits.restorationCandidates(at: sourcePath) }
+        } catch {
+            guard alreadySupported else { throw error }
+            Log.warn("Valet already supports the requested PHP versions. Skipping unreadable temporary support records.")
+            return nil
+        }
+        let installedCandidates = await runBlocking {
+            candidates.filter {
+                installedVersions.contains($0) || container.filesystem.fileExists("\(container.paths.optPath)/php@\($0)/bin/php")
+            }
+        }
+        guard !alreadySupported || !installedCandidates.isSubset(of: list.versions) else { return nil }
+        return installedCandidates
     }
 
     private func ownedVersions(in source: (path: String, content: String), valetVersion: String) async throws -> Set<String> {
@@ -136,7 +178,7 @@ class PrepareValetPhpSupportCommand: BrewCommand {
                 }
             } catch {
                 throw BrewCommandError(
-                    error: "Could not restore Valet after its syntax check failed.",
+                    error: "phpman.valet.errors.restore_failed".localized,
                     log: [validationError.localizedDescription, error.localizedDescription]
                 )
             }
@@ -144,31 +186,6 @@ class PrepareValetPhpSupportCommand: BrewCommand {
         }
         let confirmed = try await runBlocking { try container.filesystem.getStringFromFile(path) }
         guard confirmed == updated else { throw ValetPhpSupportError.sourceChanged }
-    }
-
-    private func updateIfNeeded(
-        current: VersionNumber,
-        composer: String,
-        shell: ShellProtocol,
-        _ onProgress: @escaping @Sendable (BrewCommandProgress) -> Void
-    ) async throws -> VersionNumber? {
-        let latest = try await Packagist.getLatestStableVersion(packageName: "laravel/valet", container: container)
-        guard latest.major == current.major,
-              Constants.ValetSupportedPhpVersionMatrix[latest.major] != nil else {
-            throw ValetPhpSupportError.manualMajorUpgradeRequired
-        }
-        container.valet.latestVersion = latest
-        guard current.isOlderThan(latest) else { return nil }
-        guard await approval(.update(current: current.text, latest: latest.text)) else {
-            throw ValetPhpSupportError.cancelled
-        }
-        onProgress(.create(value: 0.05, title: getCommandTitle(), description: "phpman.valet.updating".localized))
-        try await run(shell: shell, CommandCatalog.ValetSupport.update(composer: composer, version: latest.text), onProgress)
-        let installed = try await readVersion(shell: shell)
-        guard installed.text == latest.text else {
-            throw ValetPhpSupportError.updateIncomplete
-        }
-        return installed
     }
 
     /// Undo only recorded additions after the corresponding PHP installations are gone.
@@ -181,11 +198,7 @@ class PrepareValetPhpSupportCommand: BrewCommand {
             possiblyAbsent.filter { !container.filesystem.fileExists("\(container.paths.optPath)/php@\($0)/bin/php") }
         }
         guard !absent.isEmpty, try await runBlocking({ try edits.hasEdits(for: absent) }) else { return }
-        await runBlocking { container.paths.detectBinaryPaths() }
-        guard let composer = container.paths.composer else {
-            throw ValetPhpSupportError.unrecognizedInstallation
-        }
-        let source = try await readSource(composer: composer, shell: shell)
+        let source = try await readSource()
         let version = try await readVersion(shell: shell).text
         let path = source.path
         let original = source.content
@@ -209,27 +222,19 @@ class PrepareValetPhpSupportCommand: BrewCommand {
         return version
     }
 
-    private func readSource(composer: String, shell: ShellProtocol) async throws -> (path: String, content: String) {
-        let directory = try await checkedOutput(CommandCatalog.ValetSupport.vendorDirectory(composer: composer), shell: shell)
-        guard directory.hasPrefix("/"), !directory.contains("\n") else {
-            throw ValetPhpSupportError.unrecognizedInstallation
-        }
-        let root = URL(fileURLWithPath: directory).appendingPathComponent("laravel/valet").standardizedFileURL.path
+    /// Read `Brew.php` from the package that the `valet` command resolves to.
+    private func readSource() async throws -> (path: String, content: String) {
         let container = self.container
         return try await runBlocking {
-            let filesystem = container.filesystem!
-            guard try container.paths.valetPackageDirectory() == root else {
-                throw ValetPhpSupportError.unrecognizedInstallation
-            }
-            let path = "\(root)/cli/Valet/Brew.php"
-            return (path, try filesystem.getStringFromFile(path))
+            let path = try container.paths.valetPackageDirectory() + "/cli/Valet/Brew.php"
+            return (path, try container.filesystem.getStringFromFile(path))
         }
     }
 
     private func checkedOutput(_ command: String, shell: ShellProtocol) async throws -> String {
         let (process, output) = try await shell.attach(command, didReceiveOutput: { _, _ in }, withTimeout: .minutes(2))
         guard process.terminationStatus == 0 else {
-            throw BrewCommandError(error: "Could not prepare Valet PHP support.", log: [output.err, output.out])
+            throw BrewCommandError(error: "phpman.valet.errors.prepare_failed".localized, log: [output.err, output.out])
         }
         return output.out.trimmingCharacters(in: .whitespacesAndNewlines)
     }

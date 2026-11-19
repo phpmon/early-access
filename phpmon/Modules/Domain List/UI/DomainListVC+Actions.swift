@@ -168,6 +168,13 @@ extension DomainListVC {
     public func isolateSite(site: ValetSite, version: String) {
         waitAndExecute {
             do {
+                // Valet accepts the linked `php` formula through its `php` entry, but `valet isolate`
+                // only accepts series that its list names. Ask before adding a missing entry.
+                let window = self.view.window
+                try await PrepareValetPhpSupportCommand(site.container, versions: [version]) { change in
+                    await change.confirm(onWindow: window)
+                }.execute(shell: site.container.shell) { _ in }
+
                 // Instruct Valet to isolate a given PHP version
                 try await site.isolate(version: version)
                 // Reload the UI if it's the same site
@@ -176,6 +183,10 @@ extension DomainListVC {
                 } else {
                     await self.reloadDomains()
                 }
+            } catch ValetPhpSupportError.cancelled {
+                return
+            } catch let error as BrewCommandError {
+                self.notifyAboutFailedValetSupport(error)
             } catch {
                 // Notify the user about a failed command
                 let error = error as! ValetInteractionError
@@ -318,6 +329,17 @@ extension DomainListVC {
             .withInformation(
                 title: "domain_list.alerts_status_not_changed.title".localized,
                 subtitle: "domain_list.alerts_status_not_changed.desc".localized(command)
+            )
+            .withPrimary(text: "generic.ok".localized)
+            .show(urgency: .bringToFront)
+    }
+
+    private func notifyAboutFailedValetSupport(_ error: BrewCommandError) {
+        NVAlert()
+            .withInformation(
+                title: "domain_list.alerts_isolation_failed.title".localized,
+                subtitle: error.error,
+                description: error.log.suffix(2).filter { $0 != error.error }.joined(separator: "\n")
             )
             .withPrimary(text: "generic.ok".localized)
             .show(urgency: .bringToFront)

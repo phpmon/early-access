@@ -5,7 +5,7 @@
 //  Copyright © 2026 Nico Verbruggen. All rights reserved.
 //
 
-import Foundation
+import Cocoa
 import CryptoKit
 
 /// A write-ahead record: either hash identifies the edit's ownership after an interrupted write or rollback.
@@ -87,9 +87,45 @@ nonisolated struct ValetPhpSupportEdits {
     }
 }
 
-nonisolated enum ValetPhpSupportChange: Sendable {
-    case update(current: String, latest: String)
-    case addVersions([String], valetVersion: String, file: String)
+/// A request to add PHP versions to Valet's support list, shown to the user for consent.
+nonisolated struct ValetPhpSupportChange: Sendable {
+    let versions: [String]
+    let valetVersion: String
+    let file: String
+    /// A newer Valet release that the launch-time update check found, if any.
+    let newerValetVersion: String?
+
+    var title: String {
+        return "phpman.valet.add.title".localized(names)
+    }
+
+    var message: String {
+        var paragraphs = ["phpman.valet.add.description".localized(valetVersion, names, file)]
+        if let newerValetVersion {
+            paragraphs.append("phpman.valet.add.newer_valet".localized(newerValetVersion, names))
+        }
+        paragraphs.append("phpman.valet.add.disclaimer".localized(names))
+        return paragraphs.joined(separator: "\n\n")
+    }
+
+    private var names: String {
+        return versions.joined(separator: ", ")
+    }
 }
 
 typealias ValetPhpSupportApproval = @MainActor @Sendable (ValetPhpSupportChange) async -> Bool
+
+extension ValetPhpSupportChange {
+    /// Ask for consent as a sheet on the window that started the operation.
+    @MainActor func confirm(onWindow window: NSWindow?) async -> Bool {
+        guard let window else { return false }
+        return await Alert.confirm(
+            onWindow: window,
+            messageText: title,
+            informativeText: message,
+            buttonTitle: "phpman.valet.confirm_patch.button".localized,
+            secondButtonTitle: "generic.cancel".localized,
+            style: .warning
+        )
+    }
+}

@@ -21,37 +21,39 @@ struct PrepareValetPhpSupportTest {
         #expect(try container.filesystem.getStringFromFile(sourcePath) == expected)
     }
 
-    @Test(arguments: [false, true])
-    func update_is_checked_again_before_deciding_whether_to_patch(_ updateAddsSupport: Bool) async throws {
-        let updated = source(versions: updateAddsSupport ? ["8.7", "8.6", "8.5"] : ["8.5"]) + "\n// Installed by Composer update\n"
-        let container = makeContainer(current: "4.11.0", updatedSource: updated)
-        try await PrepareValetPhpSupportCommand(container, versions: ["8.6", "8.7"], approval: { _ in true }).execute(shell: container.shell) { _ in }
-        let content = try container.filesystem.getStringFromFile(sourcePath)
-        #expect(try ValetPhpVersionList(content).versions.isSuperset(of: ["8.6", "8.7"]))
-        #expect(content.contains("// Installed by Composer update"))
+    @Test(arguments: ["4.12.0", "4.13.0"])
+    func a_newer_valet_is_mentioned_in_the_prompt_but_never_installed(_ latest: String) async throws {
+        let container = makeContainer(latest: latest)
+        try await PrepareValetPhpSupportCommand(container, versions: ["8.7"], approval: { change in
+            #expect(change.versions == ["8.7"])
+            #expect(change.newerValetVersion == (latest == "4.13.0" ? "4.13.0" : nil))
+            #expect(change.message.contains("phpman.valet.add.newer_valet".localized("4.13.0", "8.7")) == (latest == "4.13.0"))
+            return true
+        }).execute(shell: container.shell) { _ in }
         #expect(container.valet.version?.text == "4.12.0")
-        if updateAddsSupport {
-            #expect(content == updated)
-        }
+        #expect(try ValetPhpVersionList(container.filesystem.getStringFromFile(sourcePath)).versions.contains("8.7"))
     }
 
-    @Test func already_supported_versions_work_without_network_access() async throws {
+    @Test func already_supported_versions_need_no_changes() async throws {
         let original = source(versions: ["8.7", "8.6", "8.5"])
-        let container = makeContainer(content: original, networkStatus: 503)
+        let container = makeContainer(content: original)
         try await PrepareValetPhpSupportCommand(container, versions: ["8.6", "8.7"]).execute(shell: container.shell) { _ in }
         #expect(try container.filesystem.getStringFromFile(sourcePath) == original)
     }
 
     @Test func failed_valet_preparation_stops_the_php_manager_before_homebrew_runs() async throws {
-        let container = makeContainer(networkStatus: 503)
+        let container = makeContainer(sourceReadOnly: true)
         let formula = BrewPhpFormula(
             container, name: "shivammathur/php/php@8.7", displayName: "PHP 8.7", installedVersion: nil, releaseStatus: .prerelease(nil)
         )
         let command = ModifyPhpVersionCommand(container, title: "Test", upgrading: [], installing: [formula])
+        command.approveValetChange = { _ in true }
         do {
             try await command.execute(shell: container.shell) { _ in }
-            Issue.record("Expected Valet's failed update check to prevent the PHP installation")
-        } catch is BrewCommandError {
+            Issue.record("Expected the read-only Valet file to prevent the PHP installation")
+        } catch let error as ValetSupportPreparationError {
+            #expect(error.versions == ["8.7"])
+            #expect(error.detail == "phpman.valet.errors.source_not_writable".localized)
             #expect(try container.filesystem.getStringFromFile(sourcePath) == source())
             #expect(!container.filesystem.fileExists("/opt/homebrew/opt/php@8.7/bin/php"))
         }
@@ -64,6 +66,20 @@ struct PrepareValetPhpSupportTest {
     }
 
     @Test(arguments: [3, 4])
+    func the_series_moving_to_the_php_formula_is_left_to_isolation(_ major: Int) {
+        let container = Container.fake()
+        container.valet.version = VersionNumber(major: major, minor: 0, patch: 0)
+        let php = BrewPhpFormula(
+            container, name: "php", displayName: "PHP 8.4", installedVersion: "8.4.0",
+            updateCheck: .available(.upgrade(version: "8.5.0"))
+        )
+        let other = BrewPhpFormula(container, name: "php@8.6", displayName: "PHP 8.6", installedVersion: nil)
+        let command = ModifyPhpVersionCommand(container, title: "Test", upgrading: [php], installing: [other])
+        // Valet accepts PHP 8.5 through `php`. Valet 3's built-in mapping ends at PHP 8.4, so it still needs an entry there.
+        #expect(command.requestedPhpVersions == (major == 4 ? ["8.4", "8.6"] : ["8.4", "8.5", "8.6"]))
+    }
+
+    @Test(arguments: [3, 4])
     func manager_keeps_future_series_but_does_not_expand_legacy_valet_support(_ major: Int) {
         let container = Container.fake()
         container.valet.version = VersionNumber(major: major, minor: 0, patch: 0)
@@ -73,19 +89,13 @@ struct PrepareValetPhpSupportTest {
         #expect(command.requestedPhpVersions == ["8.7"])
     }
 
-    @Test(arguments: [Failure.network, .composer, .constrained, .majorUpgrade, .installationMismatch, .syntax,
-                      .unfamiliarSource, .readOnly, .prereleaseValet])
+    @Test(arguments: [Failure.installationMismatch, .syntax, .unfamiliarSource, .readOnly, .prereleaseValet])
     func failed_preconditions_or_validation_never_leave_a_patched_list(_ failure: Failure) async throws {
         let original = failure == .unfamiliarSource ? source().replacing("const SUPPORTED_PHP_VERSIONS", with: "const OTHER_VERSIONS") : source()
         let container = makeContainer(
-            current: failure == .prereleaseValet ? "4.12.0-dev"
-                : (failure == .composer || failure == .constrained ? "4.11.0" : "4.12.0"),
-            latest: failure == .majorUpgrade ? "5.0.0" : "4.12.0",
+            current: failure == .prereleaseValet ? "4.12.0-dev" : "4.12.0",
             content: original,
-            updatedVersion: failure == .constrained ? "4.11.0" : "4.12.0",
-            updateExitCode: failure == .composer ? 1 : 0,
             lintExitCode: failure == .syntax ? 1 : 0,
-            networkStatus: failure == .network ? 503 : 200,
             installationMismatch: failure == .installationMismatch,
             sourceReadOnly: failure == .readOnly
         )
@@ -158,53 +168,43 @@ struct PrepareValetPhpSupportTest {
 
     func makeContainer(
         current: String = "4.12.0",
-        latest: String = "4.12.0",
+        latest: String? = nil,
         content: String? = nil,
-        updatedSource: String? = nil,
-        updatedVersion: String = "4.12.0",
-        updateTarget: String? = nil,
-        updateExitCode: Int32 = 0,
         lintExitCode: Int32 = 0,
-        networkStatus: Int = 200,
         installationMismatch: Bool = false,
         sourceReadOnly: Bool = false,
         changedDuringVersionCheck: String? = nil,
         changedDuringLint: String? = nil
     ) -> Container {
         let versionCommand = "'/opt/homebrew/bin/valet' --version"
-        var updateTransactions: [FakeShellTransaction] = [
-            .shell(versionCommand, .instant("Laravel Valet \(updatedVersion)"))
-        ]
-        if let updatedSource { updateTransactions.append(.write(updatedSource, to: sourcePath)) }
         let container = Container.fake(
             shell: [
-                "'/opt/homebrew/bin/composer' global config vendor-dir --absolute": .instant("\(root)/../.."),
                 versionCommand: .init(items: [.instant("Laravel Valet \(current)")],
                     transactions: changedDuringVersionCheck.map { [.write($0, to: sourcePath)] } ?? []),
-                "'/opt/homebrew/bin/composer' global update laravel/valet:\(updateTarget ?? latest) --with-all-dependencies --no-interaction":
-                    .init(items: [.instant("Composer update")], transactions: updateExitCode == 0 ? updateTransactions : [], exitCode: updateExitCode),
                 "'/opt/homebrew/bin/php' -l '\(sourcePath)'": .init(
                     items: [.instant(lintExitCode == 0 ? "No syntax errors detected" : "Parse error")],
                     transactions: changedDuringLint.map { [.write($0, to: sourcePath)] } ?? [], exitCode: lintExitCode
                 )
             ],
             files: [
-                "/opt/homebrew/bin/composer": .fake(.binary),
                 "/opt/homebrew/bin/valet": .fake(.symlink, installationMismatch ? "/different/valet" : "\(root)/valet"),
                 "/different/valet": .fake(.binary),
                 "\(root)/valet": .fake(.binary),
                 sourcePath: .fake(.text, content ?? source(), readOnly: sourceReadOnly)
-            ],
-            getResponses: [URL(string: "https://repo.packagist.org/p2/laravel/valet.json")!: .init(
-                statusCode: networkStatus, headers: [:],
-                text: "{\"packages\":{\"laravel/valet\":[{\"version\":\"v\(latest)\",\"version_normalized\":\"\(latest).0\"}]}}", duration: 0
-            )]
+            ]
         )
         container.valet.installed = true
+        container.valet.latestVersion = latest.flatMap { try? VersionNumber.parse($0) }
         return container
     }
 
+    /// Simulate the user updating Valet outside PHP Monitor, which replaces `Brew.php`.
+    func updateValetExternally(_ container: Container, to version: String, source: String) throws {
+        try container.filesystem.writeAtomicallyToFile(sourcePath, content: source)
+        (container.shell as! TestableShell).expectations["'/opt/homebrew/bin/valet' --version"] = .instant("Laravel Valet \(version)")
+    }
+
     nonisolated enum Failure: Sendable {
-        case network, composer, constrained, majorUpgrade, installationMismatch, syntax, unfamiliarSource, readOnly, prereleaseValet
+        case installationMismatch, syntax, unfamiliarSource, readOnly, prereleaseValet
     }
 }

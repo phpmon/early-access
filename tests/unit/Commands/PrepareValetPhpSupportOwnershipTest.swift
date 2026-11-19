@@ -9,31 +9,64 @@ import Testing
 import Foundation
 
 extension PrepareValetPhpSupportTest {
+    @Test(arguments: [2, 3])
+    func unknown_layout_uses_the_installed_valet_majors_support_range(_ major: Int) async throws {
+        let original = "<?php // Unrecognized support list"
+        let container = makeContainer(current: "\(major).0.0", content: original)
+        let supported = major == 2 ? "8.2" : "8.4"
+        let newer = major == 2 ? "8.3" : "8.5"
+        try await PrepareValetPhpSupportCommand(container, versions: [supported]).execute(shell: container.shell) { _ in }
+        do {
+            try await PrepareValetPhpSupportCommand(container, versions: [supported, newer], approval: { _ in true })
+                .execute(shell: container.shell) { _ in }
+            Issue.record("Expected the unrecognized list to stop PHP \(newer)")
+        } catch let error as BrewCommandError {
+            // The message names only the unlisted version, the entry to add and the file to edit.
+            #expect(error.error == ValetPhpSupportError.unrecognizedSourceMessage(versions: [newer], file: sourcePath))
+            #expect(error.error.contains("'php@\(newer)'"))
+            #expect(error.error.contains(sourcePath))
+            #expect(!error.error.contains("PHP \(supported)"))
+        }
+        #expect(try container.filesystem.getStringFromFile(sourcePath) == original)
+    }
+
+    @Test(arguments: ["otherInstallation", "oldLayout", "noisyVersion", "changedFile", "corruptRecord"])
+    func supported_php_does_not_require_a_patchable_valet(_ setup: String) async throws {
+        let container = makeContainer(
+            content: setup == "oldLayout" ? "<?php // Older Valet layout" : source(),
+            installationMismatch: setup == "otherInstallation"
+        )
+        if setup == "noisyVersion" {
+            let shell = container.shell as! TestableShell
+            shell.expectations["'/opt/homebrew/bin/valet' --version"] = .instant("PHP Deprecated: notice\nLaravel Valet 4.12.0")
+        } else if setup == "changedFile" {
+            try await PrepareValetPhpSupportCommand(container, versions: ["8.7"], approval: { _ in true })
+                .execute(shell: container.shell) { _ in }
+            let changed = try container.filesystem.getStringFromFile(sourcePath) + "\n// User edit"
+            try container.filesystem.writeAtomicallyToFile(sourcePath, content: changed)
+        } else if setup == "corruptRecord" {
+            try container.filesystem.writeAtomicallyToFile(ValetPhpSupportEdits(container: container).path, content: "{")
+        }
+        let original = try container.filesystem.getStringFromFile(sourcePath)
+        try await PrepareValetPhpSupportCommand(container, versions: ["8.4"]).execute(shell: container.shell) { _ in }
+        #expect(try container.filesystem.getStringFromFile(sourcePath) == original)
+        await #expect(throws: BrewCommandError.self) {
+            try await PrepareValetPhpSupportCommand(container, versions: ["8.4", "8.8"], approval: { _ in true })
+                .execute(shell: container.shell) { _ in }
+        }
+        #expect(try container.filesystem.getStringFromFile(sourcePath) == original)
+    }
+
     @Test(arguments: [false, true])
-    func cancelled_patch_after_valet_update_keeps_installed_versions_in_the_retry(_ adds86: Bool) async throws {
+    func an_external_valet_update_offers_installed_temporary_support_again(_ adds86: Bool) async throws {
         let upstream = adds86 ? source(versions: ["8.6", "8.5", "8.4"]) : source()
-        let container = makeContainer(updatedSource: upstream, updatedVersion: "4.13.0", updateTarget: "4.13.0")
+        let container = makeContainer()
         try await PrepareValetPhpSupportCommand(container, versions: ["8.7"], approval: { _ in true })
             .execute(shell: container.shell) { _ in }
         try container.filesystem.writeAtomicallyToFile("/opt/homebrew/opt/php@8.7/bin/php", content: "installed")
-        (container.webApi as! TestableWebApi).setGetResponse(
-            for: URL(string: "https://repo.packagist.org/p2/laravel/valet.json")!,
-            response: .init(statusCode: 200, headers: [:], text:
-                #"{"packages":{"laravel/valet":[{"version":"v4.13.0","version_normalized":"4.13.0.0"}]}}"#, duration: 0)
-        )
-        do {
-            try await PrepareValetPhpSupportCommand(container, versions: ["8.6"], approval: { change in
-                if case .update = change { return true }
-                return false
-            }).execute(shell: container.shell) { _ in }
-            Issue.record("Expected the support edit to be cancelled")
-        } catch ValetPhpSupportError.cancelled {
-            #expect(try container.filesystem.getStringFromFile(sourcePath) == upstream)
-        }
+        try updateValetExternally(container, to: "4.13.0", source: upstream)
         try await PrepareValetPhpSupportCommand(container, versions: ["8.6"], approval: { change in
-            if case let .addVersions(versions, _, _) = change {
-                #expect(Set(versions) == (adds86 ? ["8.7"] : ["8.6", "8.7"]))
-            }
+            #expect(change.versions == (adds86 ? ["8.7"] : ["8.7", "8.6"]))
             return true
         }).execute(shell: container.shell) { _ in }
         let content = try container.filesystem.getStringFromFile(sourcePath)
@@ -43,17 +76,13 @@ extension PrepareValetPhpSupportTest {
     @Test(arguments: [false, true], [false, true])
     func updating_valet_preserves_temporary_support_only_for_still_installed_php(stillInstalled: Bool, upstreamAddsSupport: Bool) async throws {
         let upstream = source(versions: upstreamAddsSupport ? ["8.7", "8.6", "8.5", "8.4"] : ["8.5", "8.4"])
-        let container = makeContainer(updatedSource: upstream, updatedVersion: "4.13.0", updateTarget: "4.13.0")
+        let container = makeContainer()
         try await PrepareValetPhpSupportCommand(container, versions: ["8.7"], approval: { _ in true })
             .execute(shell: container.shell) { _ in }
         if stillInstalled {
             try container.filesystem.writeAtomicallyToFile("/opt/homebrew/opt/php@8.7/bin/php", content: "installed")
         }
-        (container.webApi as! TestableWebApi).setGetResponse(
-            for: URL(string: "https://repo.packagist.org/p2/laravel/valet.json")!,
-            response: .init(statusCode: 200, headers: [:], text:
-                #"{"packages":{"laravel/valet":[{"version":"v4.13.0","version_normalized":"4.13.0.0"}]}}"#, duration: 0)
-        )
+        try updateValetExternally(container, to: "4.13.0", source: upstream)
         try await PrepareValetPhpSupportCommand(container, versions: ["8.6"], approval: { _ in true })
             .execute(shell: container.shell) { _ in }
         let content = try container.filesystem.getStringFromFile(sourcePath)
@@ -126,28 +155,8 @@ extension PrepareValetPhpSupportTest {
         #expect(try container.filesystem.getStringFromFile(sourcePath) == source())
     }
 
-    @Test func outdated_valet_offers_an_update_instead_of_a_support_patch() async throws {
-        let container = makeContainer(current: "4.11.0")
-        do {
-            try await PrepareValetPhpSupportCommand(container, versions: ["8.7"], approval: { change in
-                switch change {
-                case let .update(current, latest):
-                    #expect(current == "4.11.0")
-                    #expect(latest == "4.12.0")
-                case .addVersions:
-                    Issue.record("An outdated Valet must be updated before offering a support patch")
-                }
-                return false
-            }).execute(shell: container.shell) { _ in }
-            Issue.record("Expected the declined Valet update to stop the operation")
-        } catch ValetPhpSupportError.cancelled {
-            #expect(try container.filesystem.getStringFromFile(sourcePath) == source())
-        }
-    }
-
-    @Test(arguments: ["4.11.0", "4.12.0"])
-    func older_unsupported_php_never_offers_a_support_patch_or_valet_update(_ current: String) async throws {
-        let container = makeContainer(current: current)
+    @Test func older_unsupported_php_never_offers_a_support_patch() async throws {
+        let container = makeContainer()
         do {
             try await PrepareValetPhpSupportCommand(container, versions: ["7.0"], approval: { _ in
                 Issue.record("Older unsupported PHP versions must not offer support changes")
@@ -159,31 +168,15 @@ extension PrepareValetPhpSupportTest {
         }
     }
 
-    @Test(arguments: [false, true])
-    func missing_or_declined_permission_leaves_valet_unchanged(_ updateAvailable: Bool) async throws {
-        let container = makeContainer(current: updateAvailable ? "4.11.0" : "4.12.0")
+    @Test func missing_or_declined_permission_leaves_valet_unchanged() async throws {
+        let container = makeContainer(latest: "4.13.0")
         do {
             try await PrepareValetPhpSupportCommand(container, versions: ["8.7"]).execute(shell: container.shell) { _ in }
             Issue.record("Expected missing approval to cancel the operation")
         } catch ValetPhpSupportError.cancelled {
             #expect(try container.filesystem.getStringFromFile(sourcePath) == source())
             #expect(!container.filesystem.fileExists(ValetPhpSupportEdits(container: container).path))
-            #expect(container.valet.version?.text == (updateAvailable ? "4.11.0" : "4.12.0"))
-        }
-    }
-
-    @Test func update_and_patch_need_separate_permission() async throws {
-        let container = makeContainer(current: "4.11.0")
-        do {
-            try await PrepareValetPhpSupportCommand(container, versions: ["8.7"], approval: { change in
-                if case .update = change { return true }
-                return false
-            }).execute(shell: container.shell) { _ in }
-            Issue.record("Expected declined patch permission to cancel the PHP operation")
-        } catch ValetPhpSupportError.cancelled {
             #expect(container.valet.version?.text == "4.12.0")
-            #expect(try container.filesystem.getStringFromFile(sourcePath) == source())
-            #expect(!container.filesystem.fileExists(ValetPhpSupportEdits(container: container).path))
         }
     }
 

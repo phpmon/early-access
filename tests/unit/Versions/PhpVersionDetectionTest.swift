@@ -237,13 +237,27 @@ struct PhpVersionDetectionTest {
         #expect(missingHelper.contains("Error: PHP 8.3 is not installed."))
     }
 
-    @Test func detect_php_versions_tracks_valet_incompatible_versions_separately() async throws {
+    @Test(arguments: [true, false])
+    func detect_php_versions_tracks_valet_incompatible_versions_separately(readableList: Bool) async throws {
+        let root = "/Users/fake/.composer/vendor/laravel/valet"
+        let source = """
+        namespace Valet;
+        class Brew {
+            const SUPPORTED_PHP_VERSIONS = [
+                'php',
+                'php@8.5',
+            ];
+        }
+        """
         let container = Container.fake(
             shell: [
                 "/opt/homebrew/opt/php@8.4/bin/php --ini | grep -E -o '(/[^ ]+\\.ini)'": .instant(""),
                 "/opt/homebrew/opt/php@8.5/bin/php --ini | grep -E -o '(/[^ ]+\\.ini)'": .instant("")
             ],
             files: [
+                "/opt/homebrew/bin/valet": .fake(.symlink, "\(root)/valet"),
+                "\(root)/valet": .fake(.binary),
+                "\(root)/cli/Valet/Brew.php": .fake(.text, readableList ? source : "<?php"),
                 "/opt/homebrew/opt/php@8.5": .fake(.symlink, "/opt/homebrew/Cellar/php/8.5.0"),
                 "/opt/homebrew/opt/php@8.4": .fake(.symlink, "/opt/homebrew/Cellar/php@8.4/8.4.0"),
                 "/opt/homebrew/opt/php@8.4/bin/php": .fake(.binary),
@@ -263,14 +277,59 @@ struct PhpVersionDetectionTest {
 
         let detected = await container.phpEnvs.detectPhpVersions()
 
-        #expect(detected == ["8.4"])
-        #expect(container.phpEnvs.availablePhpVersions == ["8.4"])
-        #expect(container.phpEnvs.incompatiblePhpVersions == ["8.5"])
+        let supported = readableList ? "8.5" : "8.4"
+        #expect(detected == [supported])
+        #expect(container.phpEnvs.availablePhpVersions == [supported])
+        #expect(container.phpEnvs.incompatiblePhpVersions == [readableList ? "8.4" : "8.5"])
 
-        let supportedHelper = try container.filesystem.getStringFromFile("/Users/fake/.config/phpmon/bin/pm84")
-        let unsupportedInstalledHelper = try container.filesystem.getStringFromFile("/Users/fake/.config/phpmon/bin/pm85")
+        let php84Helper = try container.filesystem.getStringFromFile("/Users/fake/.config/phpmon/bin/pm84")
+        let php85Helper = try container.filesystem.getStringFromFile("/Users/fake/.config/phpmon/bin/pm85")
 
-        #expect(supportedHelper.contains("PHP Monitor has enabled this terminal to use PHP 8.4."))
-        #expect(unsupportedInstalledHelper.contains("PHP Monitor has enabled this terminal to use PHP 8.5."))
+        #expect(php84Helper.contains("PHP Monitor has enabled this terminal to use PHP 8.4."))
+        #expect(php85Helper.contains("PHP Monitor has enabled this terminal to use PHP 8.5."))
+    }
+
+    @Test(arguments: [3, 4])
+    func detect_php_versions_accepts_the_php_formula_before_valet_lists_its_series(valetMajor: Int) async throws {
+        let root = "/Users/fake/.composer/vendor/laravel/valet"
+        let container = Container.fake(
+            shell: [
+                "/opt/homebrew/opt/php@8.4/bin/php --ini | grep -E -o '(/[^ ]+\\.ini)'": .instant(""),
+                "/opt/homebrew/opt/php@8.5/bin/php --ini | grep -E -o '(/[^ ]+\\.ini)'": .instant("")
+            ],
+            files: [
+                "/opt/homebrew/bin/valet": .fake(.symlink, "\(root)/valet"),
+                "\(root)/valet": .fake(.binary),
+                "\(root)/cli/Valet/Brew.php": .fake(.text, """
+                    namespace Valet;
+                    class Brew {
+                        const SUPPORTED_PHP_VERSIONS = [
+                            'php',
+                            'php@8.4',
+                        ];
+                    }
+                    """),
+                "/opt/homebrew/opt/php@8.5": .fake(.symlink, "/opt/homebrew/Cellar/php/8.5.0"),
+                "/opt/homebrew/opt/php@8.4": .fake(.symlink, "/opt/homebrew/Cellar/php@8.4/8.4.0"),
+                "/opt/homebrew/opt/php@8.4/bin/php": .fake(.binary),
+                "/opt/homebrew/opt/php@8.5/bin/php": .fake(.binary),
+                "/usr/local/bin/": .fake(.directory, readOnly: true)
+            ],
+            commands: [
+                "/opt/homebrew/opt/php@8.4/bin/php -v": "PHP 8.4.0",
+                "/opt/homebrew/opt/php@8.5/bin/php -v": "PHP 8.5.0"
+            ]
+        )
+
+        // Homebrew's `php` formula is PHP 8.5, which Valet's list only covers through `php`.
+        container.phpEnvs.homebrewPackage = Self.phpHomebrewPackage()
+        container.valet.installed = true
+        container.valet.version = VersionNumber(major: valetMajor, minor: 0, patch: 0)
+
+        await container.phpEnvs.detectPhpVersions()
+
+        // Valet 3 is capped by the built-in mapping, which ends at PHP 8.4.
+        #expect(container.phpEnvs.availablePhpVersions == (valetMajor == 4 ? ["8.5", "8.4"] : ["8.4"]))
+        #expect(container.phpEnvs.incompatiblePhpVersions == (valetMajor == 4 ? [] : ["8.5"]))
     }
 }
