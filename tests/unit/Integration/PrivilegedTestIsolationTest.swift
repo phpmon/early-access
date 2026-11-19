@@ -24,8 +24,8 @@ struct PrivilegedTestIsolationTest {
         let fixer = BrewPermissionFixer(Container.fake())
         fixer.broken = [.init(formula: "php", path: "/a-host-path-that-must-not-be-inspected")]
 
-        try await fixer.fixPermissions()
-        try await fixer.fixPermissions()
+        try await fixer.restoreOwnership(of: ["8.4"])
+        try await fixer.restoreOwnership(of: ["8.4"])
 
         #expect(fixer.broken.isEmpty)
     }

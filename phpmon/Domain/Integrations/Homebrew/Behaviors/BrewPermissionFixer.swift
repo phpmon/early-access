@@ -23,73 +23,66 @@ class BrewPermissionFixer {
     var broken: [DueOwnershipFormula] = []
 
     /**
-     Takes ownership of the /BREW_PATH/Cellar/php/x.y.z/bin folder, for all PHP versions.
+     Gives the folders of the given PHP versions back to the user before Homebrew changes them.
 
-     This might not be required if the user has only used that version of PHP
-     with site isolation, so this method checks if it's required first.
+     Valet runs PHP as root, and `sudo brew services start` then makes the formula's `bin` and
+     `sbin` folders root-owned. Homebrew cannot remove or replace a keg with root-owned folders,
+     so upgrades, reinstalls and removals fail.
 
-     This is a required operation for *all* PHP versions when PHP Version Manager is running
-     operations, since any installation or upgrade may prompt the installation or upgrade
-     of other PHP versions, in which case the permissions need to set correctly.
+     Valet 3 and newer restore ownership whenever they stop PHP, and PHP Monitor may run Valet
+     without a password. So this stops PHP through Valet first, and only asks for administrator
+     access for folders that remain root-owned: with Valet 2, or for versions that are not running.
+
+     - Parameter versions: The PHP versions that Homebrew is about to change.
+     - Returns: Whether PHP services were stopped, so the caller can start the ones in use again.
      */
-    public func fixPermissions() async throws {
-        broken = []
-        // Fake installations must never inspect or repair ownership on the host.
-        guard !(container.filesystem is TestableFileSystem) else { return }
-        await determineBrokenFormulae()
-
+    @discardableResult
+    public func restoreOwnership(of versions: Set<String>) async throws -> Bool {
+        await determineBrokenFormulae(limitedTo: versions)
         if broken.isEmpty {
-            return
+            return false
         }
 
-        let script = buildBrokenFormulaeScript()
+        if container.valet.installed, (container.valet.version?.major ?? 0) >= 3 {
+            Log.info("Stopping PHP through Valet to restore ownership of: \(broken.map { $0.path })")
+            await container.shell.pipe("sudo \(container.paths.valet) stop php")
+            await determineBrokenFormulae(limitedTo: versions)
+            if broken.isEmpty {
+                return true
+            }
+        }
 
         // The admin prompt plus `brew services stop` and the recursive `chown`
-        // block until they complete, so this must never run on the main actor
-        // (this method is reached from main-actor SwiftUI actions).
-        try await runBlocking { try AppleScript.runSimpleShellAsAdmin(script) }
+        // block until they complete, so the runner keeps them off the main actor.
+        _ = try await container.privilegedCommandRunner.runSimpleShellAsAdmin(
+            buildBrokenFormulaeScript(), reason: .restoreHomebrewOwnership
+        )
 
         Log.info("Ownership was taken of the folder(s) at: " + broken
             .map({ $0.path })
             .joined(separator: ", "))
+        return true
     }
 
     /**
-     Determines which formulae's permissions are broken.
-
-     To do so, PHP Monitor resolves which directory needs to be checked and verifies
-     whether the Homebrew binary directory for the given PHP version is owned by root.
+     Determines which of the given PHP versions have a root-owned `bin` or `sbin` folder.
      */
-    private func determineBrokenFormulae() async {
-        let formulae = container.phpEnvs.cachedPhpInstallations.keys
+    private func determineBrokenFormulae(limitedTo versions: Set<String>) async {
+        broken = []
+        let container = self.container
+        let alias = container.phpEnvs.brewPhpAlias
 
-        for formula in formulae {
-            let realFormula = formula == PhpEnvironments.brewPhpAlias
-                ? "php"
-                : "php@\(formula)"
-
-            let path = "\(container.paths.optPath)/\(realFormula)"
-            let (binFolderOwned, sbinFolderOwned) = await runBlocking {
-                (Self.isOwnedByRoot(path: path + "/bin"), Self.isOwnedByRoot(path: path + "/sbin"))
+        for version in versions.sorted() {
+            let formula = version == alias ? "php" : "php@\(version)"
+            let path = "\(container.paths.optPath)/\(formula)"
+            let owned = await runBlocking {
+                ["bin", "sbin"].filter { container.filesystem.isOwnedByRoot("\(path)/\($0)") }
             }
 
-            if binFolderOwned || sbinFolderOwned {
-                Log.warn("\(formula) is owned by root")
-
-                if binFolderOwned {
-                    broken.append(DueOwnershipFormula(
-                        formula: realFormula,
-                        path: "\(container.paths.optPath)/\(realFormula)/bin"
-                    ))
-                }
-
-                if sbinFolderOwned {
-                    broken.append(DueOwnershipFormula(
-                        formula: realFormula,
-                        path: "\(container.paths.optPath)/\(realFormula)/sbin"
-                    ))
-                }
+            if !owned.isEmpty {
+                Log.warn("\(formula) has folders owned by root: \(owned)")
             }
+            broken += owned.map { DueOwnershipFormula(formula: formula, path: "\(path)/\($0)") }
         }
     }
 
@@ -108,23 +101,6 @@ class BrewPermissionFixer {
             .joined(
                 separator: " && "
             )
-    }
-
-    /**
-     Checks if the directory at the path is owned by the `root` user,
-     by checking the FS owner account name attribute.
-     */
-    nonisolated private static func isOwnedByRoot(path: String) -> Bool {
-        do {
-            let attributes = try FileManager.default.attributesOfItem(atPath: path)
-            if let owner = attributes[.ownerAccountName] as? String {
-                return owner == "root"
-            }
-        } catch {
-            return true
-        }
-
-        return true
     }
 
     struct DueOwnershipFormula {

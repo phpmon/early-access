@@ -761,3 +761,4 @@ Verfügbarer Commit: %@";
 "onboarding_wizard.output.valet_admin_access_denied" = "Der Administratorzugriff wurde verweigert, daher konnte die Valet-Einrichtung nicht fortgesetzt werden. Klicken Sie auf Valet installieren, um es erneut zu versuchen.";
 "privileged_command.reason.onboarding_valet_temporary_sudoers_install" = "Temporäre Valet-Onboarding-Berechtigungen installieren";
 "privileged_command.reason.onboarding_valet_temporary_sudoers_cleanup" = "Temporäre Valet-Onboarding-Berechtigungen entfernen";
+"privileged_command.reason.restore_homebrew_ownership" = "Besitz der PHP-Ordner wiederherstellen, bevor Homebrew sie ändert";

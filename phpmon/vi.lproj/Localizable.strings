@@ -759,3 +759,4 @@ Commit có sẵn: %@";
 "onboarding_wizard.output.valet_admin_access_denied" = "Quyền quản trị đã bị từ chối, vì vậy việc thiết lập Valet không thể tiếp tục. Nhấp vào Cài đặt Valet để thử lại.";
 "privileged_command.reason.onboarding_valet_temporary_sudoers_install" = "Cài đặt quyền onboarding tạm thời cho Valet";
 "privileged_command.reason.onboarding_valet_temporary_sudoers_cleanup" = "Xóa quyền onboarding tạm thời cho Valet";
+"privileged_command.reason.restore_homebrew_ownership" = "Khôi phục quyền sở hữu thư mục PHP trước khi Homebrew thay đổi chúng";

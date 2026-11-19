@@ -759,3 +759,4 @@ Beschikbare commit: %@";
 "onboarding_wizard.output.valet_admin_access_denied" = "Beheerdersrechten zijn geweigerd, dus de Valet-configuratie kon niet doorgaan. Klik op Valet installeren om het opnieuw te proberen.";
 "privileged_command.reason.onboarding_valet_temporary_sudoers_install" = "Tijdelijke onboarding-machtigingen voor Valet installeren";
 "privileged_command.reason.onboarding_valet_temporary_sudoers_cleanup" = "Tijdelijke onboarding-machtigingen voor Valet verwijderen";
+"privileged_command.reason.restore_homebrew_ownership" = "Eigendom van PHP-mappen herstellen voordat Homebrew ze wijzigt";

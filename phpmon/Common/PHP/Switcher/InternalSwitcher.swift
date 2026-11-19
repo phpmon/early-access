@@ -69,6 +69,16 @@ class InternalSwitcher {
         })
     }
 
+    /// Starts the active PHP version and those of isolated sites again, after an operation stopped them.
+    func startPhpInUse(activeVersion: String?) async {
+        await container.phpEnvs.detectPhpVersions()
+        guard let activeVersion, container.phpEnvs.availablePhpVersions.contains(activeVersion) else {
+            Log.warn("Could not start PHP again: PHP \(activeVersion ?? "none") is not available.")
+            return
+        }
+        await performSwitch(to: activeVersion)
+    }
+
     func getVersionsToBeHandled(_ primary: String) -> Set<String> {
         let isolated = container.valet.sites.filter { site in
             site.isolatedPhpVersion != nil

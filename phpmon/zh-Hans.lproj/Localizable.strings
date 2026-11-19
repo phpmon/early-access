@@ -759,3 +759,4 @@
 "onboarding_wizard.output.valet_admin_access_denied" = "管理员访问被拒绝，因此无法继续设置 Valet。请点击“安装 Valet”再试一次。";
 "privileged_command.reason.onboarding_valet_temporary_sudoers_install" = "安装临时 Valet 引导权限";
 "privileged_command.reason.onboarding_valet_temporary_sudoers_cleanup" = "移除临时 Valet 引导权限";
+"privileged_command.reason.restore_homebrew_ownership" = "在 Homebrew 更改之前恢复 PHP 文件夹的所有权";

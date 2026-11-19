@@ -57,6 +57,8 @@ extension PhpVersionManagerView {
             }
         } catch ValetPhpSupportError.cancelled {
             self.setBusyStatus(false)
+        } catch let error as AdminPrivilegeError {
+            self.handleAdminPrivilegeError(error)
         } catch let error as ValetSupportPreparationError {
             self.setBusyStatus(false)
             self.presentErrorAlert(
@@ -124,6 +126,8 @@ extension PhpVersionManagerView {
                     }
                 }
             }
+        } catch let error as AdminPrivilegeError {
+            self.handleAdminPrivilegeError(error)
         } catch let error as ValetSupportCleanupError {
             self.setBusyStatus(false)
             self.presentErrorAlert(
@@ -142,6 +146,18 @@ extension PhpVersionManagerView {
                 button: "generic.ok".localized
             )
         }
+    }
+
+    /// Cancelling the password dialog stops the operation quietly. Other failures are explained.
+    private func handleAdminPrivilegeError(_ error: AdminPrivilegeError) {
+        self.setBusyStatus(false)
+        guard error.kind != .userDenied else { return }
+        let key = error.getErrorMessageKey()
+        self.presentErrorAlert(
+            title: "\(key).title".localized,
+            description: "\(key).description".localized,
+            button: "generic.ok".localized
+        )
     }
 
     private func withRefreshedHealthOnFailure(_ operation: () async throws -> Void) async rethrows {

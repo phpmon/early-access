@@ -759,3 +759,4 @@
 "onboarding_wizard.output.valet_admin_access_denied" = "administrator access প্রত্যাখ্যান করা হয়েছে, তাই Valet সেটআপ চালিয়ে যাওয়া যায়নি। আবার চেষ্টা করতে Valet ইনস্টল করুন-এ ক্লিক করুন।";
 "privileged_command.reason.onboarding_valet_temporary_sudoers_install" = "Valet-এর জন্য অস্থায়ী onboarding অনুমতিগুলো ইনস্টল করুন";
 "privileged_command.reason.onboarding_valet_temporary_sudoers_cleanup" = "Valet-এর জন্য অস্থায়ী onboarding অনুমতিগুলো সরান";
+"privileged_command.reason.restore_homebrew_ownership" = "Homebrew পরিবর্তন করার আগে PHP ফোল্ডারের মালিকানা ফিরিয়ে আনুন";

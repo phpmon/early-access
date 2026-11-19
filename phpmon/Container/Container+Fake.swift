@@ -19,7 +19,8 @@ extension Container {
         files: [String: FakeFile] = [:],
         commands: [String: String] = [:],
         getResponses: [URL: FakeWebApiResponse] = [:],
-        postResponses: [URL: FakeWebApiResponse] = [:]
+        postResponses: [URL: FakeWebApiResponse] = [:],
+        privilegedCommandRunner: PrivilegedCommandRunner? = nil
     ) -> Container {
         // Create a new container
         let container = Container()
@@ -33,7 +34,8 @@ extension Container {
             fileSystemFiles: files,
             commands: commands,
             webApiGetResponses: getResponses,
-            webApiPostResponses: postResponses
+            webApiPostResponses: postResponses,
+            privilegedCommandRunner: privilegedCommandRunner
         )
 
         // Return the newly created container

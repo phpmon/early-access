@@ -38,6 +38,9 @@ nonisolated protocol FileSystemProtocol: Sendable {
 
     func isWriteableFile(_ path: String) -> Bool
 
+    /// Whether `root` owns the item. A missing item is not owned by root; an unreadable one is assumed to be.
+    func isOwnedByRoot(_ path: String) -> Bool
+
     func anyExists(_ path: String) -> Bool
 
     func fileExists(_ path: String) -> Bool

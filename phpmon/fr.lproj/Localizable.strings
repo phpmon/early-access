@@ -759,3 +759,4 @@ Commit disponible : %@";
 "onboarding_wizard.output.valet_admin_access_denied" = "L’accès administrateur a été refusé, la configuration de Valet n’a donc pas pu continuer. Cliquez sur Installer Valet pour réessayer.";
 "privileged_command.reason.onboarding_valet_temporary_sudoers_install" = "Installer des autorisations temporaires d’onboarding pour Valet";
 "privileged_command.reason.onboarding_valet_temporary_sudoers_cleanup" = "Supprimer les autorisations temporaires d’onboarding pour Valet";
+"privileged_command.reason.restore_homebrew_ownership" = "Rétablir la propriété des dossiers PHP avant que Homebrew ne les modifie";

@@ -759,3 +759,4 @@ Mevcut commit: %@";
 "onboarding_wizard.output.valet_admin_access_denied" = "Yönetici erişimi reddedildiği için Valet kurulumu devam edemedi. Tekrar denemek için Valet'i Yükle'ye tıklayın.";
 "privileged_command.reason.onboarding_valet_temporary_sudoers_install" = "Valet için geçici onboarding izinlerini yükle";
 "privileged_command.reason.onboarding_valet_temporary_sudoers_cleanup" = "Valet için geçici onboarding izinlerini kaldır";
+"privileged_command.reason.restore_homebrew_ownership" = "Homebrew değiştirmeden önce PHP klasörlerinin sahipliğini geri yükle";

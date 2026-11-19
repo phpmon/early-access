@@ -759,3 +759,4 @@
 "onboarding_wizard.output.valet_admin_access_denied" = "تم رفض الوصول الإداري، لذلك تعذر متابعة إعداد Valet. انقر على تثبيت Valet للمحاولة مرة أخرى.";
 "privileged_command.reason.onboarding_valet_temporary_sudoers_install" = "تثبيت أذونات onboarding المؤقتة لـ Valet";
 "privileged_command.reason.onboarding_valet_temporary_sudoers_cleanup" = "إزالة أذونات onboarding المؤقتة لـ Valet";
+"privileged_command.reason.restore_homebrew_ownership" = "استعادة ملكية مجلدات PHP قبل أن يغيّرها Homebrew";

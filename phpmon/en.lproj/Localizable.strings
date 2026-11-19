@@ -1143,3 +1143,4 @@ PHP Monitor can update your `~/.zshrc` automatically and add these to your PATH.
 
 "privileged_command.reason.onboarding_valet_temporary_sudoers_install" = "Install temporary Valet onboarding permissions"; // not user facing
 "privileged_command.reason.onboarding_valet_temporary_sudoers_cleanup" = "Remove temporary Valet onboarding permissions"; // not user facing
+"privileged_command.reason.restore_homebrew_ownership" = "Restore ownership of PHP folders before Homebrew changes them"; // not user facing

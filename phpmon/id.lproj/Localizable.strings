@@ -769,3 +769,4 @@ TIPS PEMECAHAN MASALAH UMUM
 "onboarding_wizard.output.valet_admin_access_denied" = "Akses administrator ditolak, sehingga penyiapan Valet tidak dapat dilanjutkan. Klik Instal Valet untuk mencoba lagi.";
 "privileged_command.reason.onboarding_valet_temporary_sudoers_install" = "Instal izin onboarding sementara untuk Valet";
 "privileged_command.reason.onboarding_valet_temporary_sudoers_cleanup" = "Hapus izin onboarding sementara untuk Valet";
+"privileged_command.reason.restore_homebrew_ownership" = "Pulihkan kepemilikan folder PHP sebelum Homebrew mengubahnya";

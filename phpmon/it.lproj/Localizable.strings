@@ -769,3 +769,4 @@ SUGGERIMENTI COMUNI PER LA RISOLUZIONE DEI PROBLEMI
 "onboarding_wizard.output.valet_admin_access_denied" = "L'accesso amministrativo è stato negato, quindi la configurazione di Valet non ha potuto continuare. Fai clic su Installa Valet per riprovare.";
 "privileged_command.reason.onboarding_valet_temporary_sudoers_install" = "Installa autorizzazioni temporanee di onboarding per Valet";
 "privileged_command.reason.onboarding_valet_temporary_sudoers_cleanup" = "Rimuovi autorizzazioni temporanee di onboarding per Valet";
+"privileged_command.reason.restore_homebrew_ownership" = "Ripristina la proprietà delle cartelle PHP prima che Homebrew le modifichi";

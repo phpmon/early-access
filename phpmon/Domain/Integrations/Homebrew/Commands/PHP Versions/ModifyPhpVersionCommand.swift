@@ -35,6 +35,13 @@ class ModifyPhpVersionCommand: BrewCommand {
     let requestedPhpVersions: Set<String>
     var approveValetChange: ValetPhpSupportApproval = { _ in false }
 
+    /// The installed PHP series that Homebrew replaces: upgraded, reinstalled, or moved to a new `php` formula.
+    let versionsReplacedByHomebrew: Set<String>
+
+    /// Gives the folders of the given PHP versions back to the user before Homebrew changes them, and returns
+    /// whether PHP was stopped for that. Replaceable so tests can observe the order of operations.
+    var restoreOwnership: @MainActor @Sendable (Set<String>) async throws -> Bool
+
     /// The PHP version linked when this command was created, snapshotted on the main actor
     /// at init time. Storing the `Sendable` `String?` (instead of the non-Sendable
     /// `PhpGuard`) lets the `nonisolated` orchestration read it without hopping. (Note:
@@ -73,6 +80,8 @@ class ModifyPhpVersionCommand: BrewCommand {
         self.installing = installing
         self.upgrading = upgrading
         self.previousPhpVersion = PhpGuard(container: container).currentVersion
+        self.restoreOwnership = { try await BrewPermissionFixer(container).restoreOwnership(of: $0) }
+        self.versionsReplacedByHomebrew = Set(upgrading.filter { !$0.isPinned }.compactMap { $0.shortVersion })
         var requested: Set<String> = []
         for formula in installing + upgrading.filter({ !$0.isPinned }) {
             if let version = formula.shortVersion { requested.insert(version) }
@@ -124,14 +133,24 @@ class ModifyPhpVersionCommand: BrewCommand {
             throw ValetSupportPreparationError(versions: unlisted.isEmpty ? requestedPhpVersions : unlisted, error: error)
         }
 
+        // Restoring ownership may stop PHP. Assume it did until it says otherwise, so a failure
+        // halfway through still starts the PHP versions in use again.
+        var phpMayBeStopped = false
         do {
+            if !versionsReplacedByHomebrew.isEmpty {
+                phpMayBeStopped = true
+                phpMayBeStopped = try await restoreOwnership(versionsReplacedByHomebrew)
+            }
             try await self.checkPhpTap(shell: shell, onProgress)
             try await self.upgradePackages(onProgress)
             try await self.installPackages(onProgress)
             await container.phpEnvs.detectPhpVersions()
-            try await self.repairBrokenPackages(onProgress)
+            try await self.repairBrokenPackages(onProgress, phpMayBeStopped: &phpMayBeStopped)
         } catch {
-            await restoreActivePhpAfterFailedMigration()
+            let switched = await restoreActivePhpAfterFailedMigration()
+            if phpMayBeStopped && !switched {
+                await InternalSwitcher(container).startPhpInUse(activeVersion: previousPhpVersion)
+            }
             let addedVersions = await support.addedVersions
             if !addedVersions.isEmpty {
                 await container.phpEnvs.detectPhpVersions()
@@ -183,17 +202,20 @@ class ModifyPhpVersionCommand: BrewCommand {
     }
 
     /// Homebrew can already have linked the new main formula when a later operation fails.
-    func restoreActivePhpAfterFailedMigration() async {
+    /// Returns whether it switched PHP, which also starts the PHP versions in use again.
+    @discardableResult
+    func restoreActivePhpAfterFailedMigration() async -> Bool {
         guard let previousPhpVersion,
               upgrading.contains(where: { !$0.isPinned && $0.seriesToRestoreAfterUpgrade == previousPhpVersion }),
               container.phpEnvs.brewPhpAlias != previousPhpVersion,
-              await ActivePhpInstallation.load(container)?.version?.short != previousPhpVersion else { return }
+              await ActivePhpInstallation.load(container)?.version?.short != previousPhpVersion else { return false }
 
         await container.phpEnvs.detectPhpVersions()
         guard let previous = container.phpEnvs.cachedPhpInstallations[previousPhpVersion],
               previous.isHealthy, !previous.isMissingBinary,
-              previous.versionNumber.short == previousPhpVersion else { return }
+              previous.versionNumber.short == previousPhpVersion else { return false }
         await InternalSwitcher(container).performSwitch(to: previousPhpVersion)
+        return true
     }
 
     nonisolated private func brewCommand(_ operation: String) -> String {
@@ -231,31 +253,36 @@ class ModifyPhpVersionCommand: BrewCommand {
         try await run(shell: container.shell, brewCommand(operation), onProgress)
     }
 
-    nonisolated private func repairBrokenPackages(_ onProgress: @escaping @Sendable (BrewCommandProgress) -> Void) async throws {
+    nonisolated private func repairBrokenPackages(
+        _ onProgress: @escaping @Sendable (BrewCommandProgress) -> Void,
+        phpMayBeStopped: inout Bool
+    ) async throws {
         // Determine which PHP installations are considered unhealthy
         // Build a list of formulae to reinstall. `cachedPhpInstallations` and the
         // `PhpInstallation` values it holds are main-actor-isolated (and non-Sendable), so we
         // gather the plain `[String]` result on the main actor and hand only that back off-main.
         let container = self.container
-        let requiringRepair: [String] = await MainActor.run {
+        let unhealthy: [String] = await MainActor.run {
             container.phpEnvs
                 .cachedPhpInstallations.values
                 .filter({ !$0.isHealthy })
-                .map { installation in
-                    let formula = "php@\(installation.versionNumber.short)"
-
-                    if installation.versionNumber.short == container.phpEnvs.brewPhpAlias {
-                        return "php"
-                    }
-
-                    return formula
-                }
+                .map { $0.versionNumber.short }
         }
 
         // If no repairs are needed, early exit
-        if requiringRepair.isEmpty {
+        if unhealthy.isEmpty {
             return
         }
+
+        let alias = container.phpEnvs.brewPhpAlias
+        let requiringRepair = unhealthy.map { $0 == alias ? "php" : "php@\($0)" }
+
+        // Reinstalling replaces the keg, so its folders must belong to the user first.
+        // If restoring ownership fails halfway, PHP may already be stopped.
+        let wasStopped = phpMayBeStopped
+        phpMayBeStopped = true
+        let stopped = try await restoreOwnership(Set(unhealthy))
+        phpMayBeStopped = wasStopped || stopped
 
         // If the health comes back as negative, attempt to reinstall
         let command = """

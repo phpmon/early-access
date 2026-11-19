@@ -66,10 +66,14 @@ class RemovePhpVersionCommand: BrewCommand {
             \(container.paths.brew) remove \(formula) --force --ignore-dependencies
             """
 
+        // Homebrew cannot remove a keg with root-owned folders. Restoring ownership may stop PHP,
+        // so assume it did until it says otherwise, and start the versions in use again on failure.
+        var phpMayBeStopped = true
         do {
-            try await BrewPermissionFixer(container).fixPermissions()
+            phpMayBeStopped = try await BrewPermissionFixer(container).restoreOwnership(of: [version])
         } catch {
-            return
+            await InternalSwitcher(container).startPhpInUse(activeVersion: previousPhpVersion)
+            throw error
         }
 
         let loggedMessages = OSAllocatedUnfairLock<[String]>(initialState: [])
@@ -115,6 +119,9 @@ class RemovePhpVersionCommand: BrewCommand {
 
             onProgress(.create(value: 1, title: getCommandTitle(), description: "phpman.steps.success".localized))
         } else {
+            if phpMayBeStopped {
+                await InternalSwitcher(container).startPhpInUse(activeVersion: previousPhpVersion)
+            }
             throw BrewCommandError(error: "The command failed to run correctly.", log: loggedMessages.withLock { $0 })
         }
     }

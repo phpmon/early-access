@@ -238,6 +238,12 @@ nonisolated class TestableFileSystem: FileSystemProtocol, @unchecked Sendable {
         }
     }
 
+    func isOwnedByRoot(_ path: String) -> Bool {
+        return accessQueue.sync {
+            storedFiles[path.replacingTildeWithHomeDirectory]?.ownedByRoot ?? false
+        }
+    }
+
     func anyExists(_ path: String) -> Bool {
         let path = path.replacingTildeWithHomeDirectory
 
@@ -329,22 +335,26 @@ nonisolated class FakeFile: Codable {
     var type: FakeFileType
     var content: String?
     var readOnly: Bool = false
+    var ownedByRoot: Bool = false
 
-    init(type: FakeFileType, content: String?, readOnly: Bool = false) {
+    init(type: FakeFileType, content: String?, readOnly: Bool = false, ownedByRoot: Bool = false) {
         self.type = type
         self.content = content
         self.readOnly = readOnly
+        self.ownedByRoot = ownedByRoot
     }
 
     public static func fake(
         _ type: FakeFileType,
         _ content: String? = nil,
-        readOnly: Bool = false
+        readOnly: Bool = false,
+        ownedByRoot: Bool = false
     ) -> FakeFile {
         return FakeFile(
             type: type,
             content: content,
-            readOnly: readOnly
+            readOnly: readOnly,
+            ownedByRoot: ownedByRoot
         )
     }
 }

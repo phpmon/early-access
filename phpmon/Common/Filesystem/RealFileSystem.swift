@@ -111,6 +111,18 @@ nonisolated final class RealFileSystem: FileSystemProtocol, Sendable {
         )
     }
 
+    func isOwnedByRoot(_ path: String) -> Bool {
+        let path = path.replacingTildeWithHomeDirectory
+        guard FileManager.default.fileExists(atPath: path) else {
+            return false
+        }
+        guard let attributes = try? FileManager.default.attributesOfItem(atPath: path),
+              let owner = attributes[.ownerAccountName] as? String else {
+            return true
+        }
+        return owner == "root"
+    }
+
     func anyExists(_ path: String) -> Bool {
         return FileManager.default.fileExists(
             atPath: path.replacingTildeWithHomeDirectory

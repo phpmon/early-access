@@ -759,3 +759,4 @@
 "onboarding_wizard.output.valet_admin_access_denied" = "管理者アクセスが拒否されたため、Valet のセットアップを続行できませんでした。もう一度試すには「Valet をインストール」をクリックしてください。";
 "privileged_command.reason.onboarding_valet_temporary_sudoers_install" = "Valet 用の一時的なオンボーディング権限をインストール";
 "privileged_command.reason.onboarding_valet_temporary_sudoers_cleanup" = "Valet 用の一時的なオンボーディング権限を削除";
+"privileged_command.reason.restore_homebrew_ownership" = "Homebrew が変更する前に PHP フォルダの所有権を戻す";

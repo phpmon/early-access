@@ -759,3 +759,4 @@
 "onboarding_wizard.output.valet_admin_access_denied" = "administrator access अस्वीकार कर दिया गया, इसलिए Valet सेटअप आगे जारी नहीं रह सका। फिर से प्रयास करने के लिए Valet इंस्टॉल करें पर क्लिक करें।";
 "privileged_command.reason.onboarding_valet_temporary_sudoers_install" = "Valet के लिए अस्थायी onboarding अनुमतियां इंस्टॉल करें";
 "privileged_command.reason.onboarding_valet_temporary_sudoers_cleanup" = "Valet के लिए अस्थायी onboarding अनुमतियां हटाएं";
+"privileged_command.reason.restore_homebrew_ownership" = "Homebrew के बदलाव से पहले PHP फ़ोल्डरों का स्वामित्व वापस लाएं";
