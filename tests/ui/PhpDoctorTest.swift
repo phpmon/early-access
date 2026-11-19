@@ -210,6 +210,7 @@ final class PHPDoctorTest: UITestCase {
         assertWarningIsVisible("warnings.required_taps_missing.title", in: app)
         assertWarningIsVisible("warnings.required_taps_untrusted.title", in: app)
         assertWarningIsVisible("warnings.files_missing.title", in: app)
+        assertWarningIsVisible("warnings.valet_pools_missing.title", in: app)
         assertWarningIsVisible("warnings.certificates_expired.title", in: app)
     }
 

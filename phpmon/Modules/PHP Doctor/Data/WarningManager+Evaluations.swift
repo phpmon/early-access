@@ -168,6 +168,31 @@ extension WarningManager {
             fix: nil
         )
 
+        let missingValetPoolsWarning = Warning(
+            command: {
+                self.phpConfigChecker.check()
+                return !self.phpConfigChecker.missingValetPools.isEmpty
+            },
+            name: "Valet pool files are missing for some PHP versions",
+            title: "warnings.valet_pools_missing.title",
+            paragraphs: { return [
+                "warnings.valet_pools_missing.description".localized(
+                    self.phpConfigChecker.missingValetPools
+                        .map { self.phpConfigChecker.valetPoolPath(for: $0) }
+                        .joined(separator: "\n• ")
+                )
+            ] },
+            url: nil,
+            fix: {
+                // The same repair that switching to a version performs, without switching.
+                let switcher = InternalSwitcher(self.container)
+                for version in self.phpConfigChecker.missingValetPools {
+                    await switcher.ensureValetConfigurationIsValidForPhpVersion(version)
+                }
+                await self.checkEnvironment()
+            }
+        )
+
         // VALET
         let expiredCertificatesWarning = Warning(
             command: {
@@ -202,6 +227,7 @@ extension WarningManager {
             missingTapsWarning,
             untrustedTapsWarning,
             missingConfigFilesWarning,
+            missingValetPoolsWarning,
             expiredCertificatesWarning
         ]
     }

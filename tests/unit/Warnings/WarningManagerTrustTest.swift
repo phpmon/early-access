@@ -50,6 +50,7 @@ struct WarningManagerTrustTest {
             "Required Homebrew taps are missing",
             "Required Homebrew taps are not trusted",
             "Your PHP installation is missing configuration files",
+            "Valet pool files are missing for some PHP versions",
             "One or more domain certificates expired"
         ])
     }

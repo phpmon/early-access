@@ -603,6 +603,8 @@
 "warnings.invalid_shell.manual_fix" = "これを恒久的に修正するには、有効なログインシェルを設定してください（例: `chsh -s %@`）。";
 "warnings.files_missing.title" = "重要な必須構成ファイルが欠落しています。";
 "warnings.files_missing.description" = "PHP をインストールした後、以下のキー設定ファイルが存在するはずです:\n\n• %@\n\nこのようなファイルが欠落している場合は、それらのファイルに関連付けられた PHP バージョンへ切り替えるべきです。これで問題が解決する可能性があります。もしそれでも解決しない場合は、Homebrew を使って該当する PHP バージョンを再インストールすることを推奨します。そうすれば欠落している設定ファイルが復元されるはずです。欠落した設定ファイルは、Fix My Valet（Valet を使用している場合）を実行した後でも「502 Bad Gateway」エラーの原因となります。";
+"warnings.valet_pools_missing.title" = "一部の PHP バージョンで Valet が設定されていません。";
+"warnings.valet_pools_missing.description" = "Valet は、サイトの提供に使う PHP バージョンごとに設定ファイルを必要とします。次のファイルがありません:\n\n• %@\n\nPHP Monitor は Valet のテンプレートからこれらを作成できます。PHP バージョンを切り替えても、そのファイルが作成されます。";
 "warnings.xdebug_conf_missing.title" = "Xdebug の設定が不完全です";
 "warnings.xdebug_conf_missing.description" = "Xdebug がインストールされていますが、モードが指定されていません。PHP Monitor に設定を更新させますか？手動で修正することもできます。";
 "warnings.required_taps_missing.title" = "必要な Homebrew タップが見つかりません";

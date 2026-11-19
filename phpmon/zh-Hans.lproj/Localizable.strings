@@ -603,6 +603,8 @@
 "warnings.invalid_shell.manual_fix" = "要永久修复此问题，请配置一个有效的登录 shell（例如：`chsh -s %@`）。";
 "warnings.files_missing.title" = "您的 PHP 安装缺少所需的重要配置文件";
 "warnings.files_missing.description" = "安装 PHP 后应存在以下关键配置文件：\n\n- %@\n\n当缺少类似文件时，应切换到与这些文件相关的 PHP 版本：这可能会解决问题。如果还不能解决问题，建议再次通过 Homebrew 重新安装相应的 PHP 版本，这样就可以恢复丢失的配置文件。配置文件缺失可能是出现 `502 Bad Gateway` 错误的原因，即使运行了 Fix My Valet(如果使用 Valet)也是如此。";
+"warnings.valet_pools_missing.title" = "部分 PHP 版本尚未配置 Valet。";
+"warnings.valet_pools_missing.description" = "Valet 需要为它用来提供站点的每个 PHP 版本准备一个配置文件。以下文件缺失：\n\n• %@\n\nPHP Monitor 可以根据 Valet 自带的模板创建这些文件。切换到某个 PHP 版本也会创建它的文件。";
 "warnings.xdebug_conf_missing.title" = "Xdebug 配置不完整";
 "warnings.xdebug_conf_missing.description" = "您已安装 Xdebug，但未指定模式。您想让 PHP Monitor 更新您的配置吗？您也可以手动修复此问题。";
 "warnings.required_taps_missing.title" = "缺少必需的 Homebrew tap";

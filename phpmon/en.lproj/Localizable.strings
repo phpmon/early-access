@@ -926,6 +926,9 @@ COMMON TROUBLESHOOTING TIPS
 
 When files like these are missing, you should switch to the PHP version associated with those files: that may resolve the problem. If this doesn't fix the issue, it's recommended to reinstall the appropriate PHP version(s) via Homebrew again, which should restore the configuration files that are missing. Missing configuration files can be the reason why you get '502 Bad Gateway' errors, even after running Fix My Valet (if you are using Valet).";
 
+"warnings.valet_pools_missing.title" = "Valet is not set up for some PHP versions.";
+"warnings.valet_pools_missing.description" = "Valet needs a configuration file for each PHP version that it serves sites with. These files are missing:\n\n• %@\n\nPHP Monitor can create them from Valet's own template. Switching to a PHP version also creates its file.";
+
 "warnings.xdebug_conf_missing.title" = "Xdebug configuration is incomplete";
 "warnings.xdebug_conf_missing.description" = "You have Xdebug installed, but no mode is specified. Would you like for PHP Monitor to update your configuration? You can also fix this manually.";
 

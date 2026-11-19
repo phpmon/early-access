@@ -603,6 +603,8 @@ Commit disponible: %@";
 "warnings.invalid_shell.manual_fix" = "Para corregir esto de forma permanente, configure una shell de inicio de sesión válida (por ejemplo: `chsh -s %@`).";
 "warnings.files_missing.title" = "A tu instalación de PHP le faltan archivos de configuración importantes.";
 "warnings.files_missing.description" = "Los siguientes archivos de configuración clave deben existir después de instalar PHP:\n\n• %@\n\nCuando esos archivos están faltantes, se recomienda cambiar a la versión de PHP asociada con esos archivos: esto puede resolver el problema. Si no arregla el problema, se recomienda reinicializar nuevamente las versiones de PHP asociadas con Homebrew, lo que debería restaurar los archivos de configuración que están faltantes. Los archivos de configuración faltantes pueden ser la razón por la cual usted recibe errores '502 Bad Gateway', incluso después de ejecutar \"Arreglar Mi Valet\" (si utiliza Valet).";
+"warnings.valet_pools_missing.title" = "Valet no está configurado para algunas versiones de PHP.";
+"warnings.valet_pools_missing.description" = "Valet necesita un archivo de configuración para cada versión de PHP con la que sirve sitios. Faltan estos archivos:\n\n• %@\n\nPHP Monitor puede crearlos a partir de la plantilla de Valet. Cambiar a una versión de PHP también crea su archivo.";
 "warnings.xdebug_conf_missing.title" = "La configuración de Xdebug está incompleta";
 "warnings.xdebug_conf_missing.description" = "Tiene Xdebug instalado, pero no se especifica modo. ¿Desea que PHP Monitor actualice su configuración? También puede corregirlo manualmente.";
 "warnings.required_taps_missing.title" = "Faltan taps de Homebrew requeridos";

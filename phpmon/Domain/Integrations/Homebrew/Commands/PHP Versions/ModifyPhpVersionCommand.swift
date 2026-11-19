@@ -38,6 +38,9 @@ class ModifyPhpVersionCommand: BrewCommand {
     /// The installed PHP series that Homebrew replaces: upgraded, reinstalled, or moved to a new `php` formula.
     let versionsReplacedByHomebrew: Set<String>
 
+    /// Every PHP series this operation installs or upgrades, including the targets of upgrades.
+    let versionsChangedByOperation: Set<String>
+
     /// Gives the folders of the given PHP versions back to the user before Homebrew changes them, and returns
     /// whether PHP was stopped for that. Replaceable so tests can observe the order of operations.
     var restoreOwnership: @MainActor @Sendable (Set<String>) async throws -> Bool
@@ -90,6 +93,8 @@ class ModifyPhpVersionCommand: BrewCommand {
                 requested.insert(target.short)
             }
         }
+        self.versionsChangedByOperation = requested
+
         // Installing an older CLI-only PHP must not expand what this Valet major supports.
         // Keep newer series so Valet can be prepared before PHP changes.
         if let major = container.valet.version?.major,
@@ -218,6 +223,16 @@ class ModifyPhpVersionCommand: BrewCommand {
         return true
     }
 
+    /// Creates missing Valet configuration, such as the pool file, for the PHP versions this operation changed.
+    func restoreValetConfiguration() async {
+        guard container.valet.installed else { return }
+        let switcher = InternalSwitcher(container)
+        let changed = versionsChangedByOperation.intersection(container.phpEnvs.availablePhpVersions)
+        for version in changed.sorted() {
+            await switcher.ensureValetConfigurationIsValidForPhpVersion(version)
+        }
+    }
+
     nonisolated private func brewCommand(_ operation: String) -> String {
         return """
             export HOMEBREW_DOWNLOAD_CONCURRENCY=auto; \
@@ -306,6 +321,9 @@ class ModifyPhpVersionCommand: BrewCommand {
 
         // Check which version of PHP are now installed
         await container.phpEnvs.detectPhpVersions()
+
+        // Give new and upgraded versions their Valet configuration now, not only once they are switched to
+        await restoreValetConfiguration()
 
         // Keep track of the currently installed version
         await MainMenu.shared.refreshActiveInstallation()

@@ -603,6 +603,8 @@ Beschikbare commit: %@";
 "warnings.invalid_shell.manual_fix" = "Om dit permanent op te lossen, configureert u een geldige login-shell (bijvoorbeeld: `chsh -s %@`).";
 "warnings.files_missing.title" = "Uw PHP-installatie mist belangrijke vereiste configuratiebestanden.";
 "warnings.files_missing.description" = "De volgende belangrijke configuratiebestanden zouden moeten bestaan na het installeren van PHP:\n\n• %@\n\nWanneer dergelijke bestanden ontbreken, moet u overschakelen naar de PHP-versie die is gekoppeld aan die bestanden: dat kan het probleem oplossen. Als dit het probleem niet oplost, wordt aanbevolen om de juiste PHP-versie(s) opnieuw te installeren via Homebrew, waardoor de ontbrekende configuratiebestanden worden hersteld. Ontbrekende configuratiebestanden kunnen de reden zijn waarom u '502 Bad Gateway'-fouten krijgt, zelfs na het uitvoeren van Fix My Valet (als u Valet gebruikt).";
+"warnings.valet_pools_missing.title" = "Valet is niet ingesteld voor sommige PHP-versies.";
+"warnings.valet_pools_missing.description" = "Valet heeft voor elke PHP-versie waarmee het sites aanbiedt een configuratiebestand nodig. Deze bestanden ontbreken:\n\n• %@\n\nPHP Monitor kan ze maken op basis van het eigen sjabloon van Valet. Overschakelen naar een PHP-versie maakt het bestand ook aan.";
 "warnings.xdebug_conf_missing.title" = "Xdebug-configuratie is onvolledig";
 "warnings.xdebug_conf_missing.description" = "Xdebug is geïnstalleerd, maar er staat geen modus opgegeven. Wilt u dat PHP Monitor uw configuratie bijwerkt? U kunt dit ook handmatig aanpassen.";
 "warnings.required_taps_missing.title" = "Vereiste Homebrew-taps ontbreken";
